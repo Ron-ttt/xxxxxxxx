@@ -58,7 +58,7 @@ func redirect(res http.ResponseWriter, req *http.Request) {
 func main() {
 	r := mux.NewRouter()
 	r.HandleFunc("/", indexPage).Methods(http.MethodPost)
-	r.HandleFunc(`/{id}`, redirect).Methods(http.MethodGet)
+	r.HandleFunc("/{id}", redirect).Methods(http.MethodGet)
 	err := http.ListenAndServe(`:8080`, r)
 	if err != nil {
 		panic(err)
