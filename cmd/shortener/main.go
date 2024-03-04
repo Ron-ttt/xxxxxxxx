@@ -11,8 +11,10 @@ import (
 
 var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
 var rez string
+var rez1 string
 var originalURL []byte
 var m = make(map[string]string)
+var localhost = "http://localhost:8080/"
 
 func randString(n int) string {
 	//rand.NewSource(time.Now().UnixNano())
@@ -30,18 +32,19 @@ func indexPage(res http.ResponseWriter, req *http.Request) {
 		panic(err)
 	}
 	fmt.Print(originalURL)
-	res.Write([]byte("кастрат"))
+	//res.Write([]byte("кастрат"))
 	res.Header().Set("content-type", "text/plain")
 	res.WriteHeader(http.StatusCreated)
 	length := 6 // Укажите длину строки
-	rez = "http://localhost:8080/" + (randString(length))
-	m[string(originalURL)] = rez
+	rez1 = randString(length)
+	rez = localhost + rez1
+	m[rez1] = string(originalURL)
 	res.Write([]byte(rez))
 
 }
 
 func redirect(res http.ResponseWriter, req *http.Request) {
-	res.Header().Set("location", string(originalURL))
+	res.Header().Set("location", m[rez1])
 	res.WriteHeader(http.StatusTemporaryRedirect)
 	res.Write(originalURL)
 
