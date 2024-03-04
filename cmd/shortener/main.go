@@ -39,15 +39,20 @@ func indexPage(res http.ResponseWriter, req *http.Request) {
 	rez1 = randString(length)
 	rez = localhost + rez1
 	m[rez1] = string(originalURL)
-	res.Write([]byte(rez))
+	//res.Write([]byte(rez))
 
 }
 
 func redirect(res http.ResponseWriter, req *http.Request) {
-	res.Header().Set("location", m[rez1])
+	params := mux.Vars(req)
+	id := params["id"]
+	originalURL, ok := m[id]
+	if !ok {
+		res.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	res.Header().Set("Location", originalURL)
 	res.WriteHeader(http.StatusTemporaryRedirect)
-	res.Write(originalURL)
-
 }
 
 func main() {
