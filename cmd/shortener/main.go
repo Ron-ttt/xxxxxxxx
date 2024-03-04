@@ -9,16 +9,15 @@ import (
 	"github.com/gorilla/mux"
 )
 
-var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
-var rez string
-var rez1 string
-var originalURL []byte
-var m = make(map[string]string)
-var localhost = "http://localhost:8080/"
+var letters = []byte("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
+
+var M map[string]string
+
+const localhost = "http://localhost:8080/"
 
 func randString(n int) string {
 	//rand.NewSource(time.Now().UnixNano())
-	b := make([]rune, n)
+	b := make([]byte, n)
 	for i := range b {
 		b[i] = letters[rand.Intn(len(letters))]
 	}
@@ -26,8 +25,8 @@ func randString(n int) string {
 }
 
 func indexPage(res http.ResponseWriter, req *http.Request) {
-	var err error
-	originalURL, err = io.ReadAll(req.Body)
+
+	originalURL, err := io.ReadAll(req.Body)
 	if err != nil {
 		panic(err)
 	}
@@ -36,25 +35,35 @@ func indexPage(res http.ResponseWriter, req *http.Request) {
 	res.Header().Set("content-type", "text/plain")
 	res.WriteHeader(http.StatusCreated)
 	length := 6 // Укажите длину строки
-	rez1 = randString(length)
-	rez = localhost + rez1
-	m[rez1] = string(originalURL)
+	rez1 := randString(length)
+	rez := localhost + rez1
+	M[rez1] = string(originalURL)
 	res.Write([]byte(rez))
 
 }
 
 func redirect(res http.ResponseWriter, req *http.Request) {
-	res.Header().Set("location", m[rez1])
+	params := mux.Vars(req)
+
+	id := params["id"]
+
+	originalURL, ok := M[id]
+	if !ok {
+		res.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	res.Header().Set("Location", originalURL)
 	res.WriteHeader(http.StatusTemporaryRedirect)
-	res.Write(originalURL)
 
 }
 
 func main() {
+	M = make(map[string]string)
 	r := mux.NewRouter()
 	r.HandleFunc("/", indexPage).Methods(http.MethodPost)
-	r.HandleFunc(`/{id}`, redirect).Methods(http.MethodGet)
-	err := http.ListenAndServe(`:8080`, r)
+	r.HandleFunc("/{id}", redirect).Methods(http.MethodGet)
+	err := http.ListenAndServe("localhost:8080", r)
 	if err != nil {
 		panic(err)
 	}
