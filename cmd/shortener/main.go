@@ -5,7 +5,6 @@ import (
 	"io"
 	"math/rand"
 	"net/http"
-	"time"
 
 	"github.com/gorilla/mux"
 )
@@ -13,9 +12,10 @@ import (
 var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
 var rez string
 var originalURL []byte
+var m = make(map[string]string)
 
 func randString(n int) string {
-	rand.Seed(time.Now().UnixNano())
+	//rand.NewSource(time.Now().UnixNano())
 	b := make([]rune, n)
 	for i := range b {
 		b[i] = letters[rand.Intn(len(letters))]
@@ -35,6 +35,7 @@ func indexPage(res http.ResponseWriter, req *http.Request) {
 	res.WriteHeader(http.StatusCreated)
 	length := 6 // Укажите длину строки
 	rez = "http://localhost:8080/" + (randString(length))
+	m[string(originalURL)] = rez
 	res.Write([]byte(rez))
 
 }
