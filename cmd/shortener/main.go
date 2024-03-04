@@ -43,7 +43,17 @@ func indexPage(res http.ResponseWriter, req *http.Request) {
 }
 
 func redirect(res http.ResponseWriter, req *http.Request) {
-	res.Header().Set("location", m[rez1])
+	params := mux.Vars(req)
+
+	id := params["id"]
+
+	originalURL, ok := M[id]
+	if !ok {
+		res.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	res.Header().Set("Location", originalURL)
 	res.WriteHeader(http.StatusTemporaryRedirect)
 
 }
