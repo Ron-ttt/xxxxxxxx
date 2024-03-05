@@ -2,18 +2,32 @@ package storage
 
 import "errors"
 
-var m = make(map[string]string)
-
-func AddToMap(key string, value string) {
-	m[key] = value
+type Storage interface {
+	Add(key string, value string)
+	Remove(key string)
+	Get(key string) (string, error)
 }
 
-func RemoveFromMap(key string) {
-	delete(m, key)
+type MapStorage struct {
+	m map[string]string
 }
 
-func GetValueByKey(key string) (string, error) {
-	value, found := m[key]
+func NewMapStorage() *MapStorage {
+	return &MapStorage{
+		m: make(map[string]string),
+	}
+}
+
+func (s *MapStorage) Add(key string, value string) {
+	s.m[key] = value
+}
+
+func (s *MapStorage) Remove(key string) {
+	delete(s.m, key)
+}
+
+func (s *MapStorage) Get(key string) (string, error) {
+	value, found := s.m[key]
 	if !found {
 		return "", errors.New("key not found")
 	}
