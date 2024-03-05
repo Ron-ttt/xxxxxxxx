@@ -2,7 +2,7 @@ package storage
 
 import "errors"
 
-var m map[string]string
+var m = make(map[string]string)
 
 func AddToMap(key string, value string) {
 	m[key] = value
