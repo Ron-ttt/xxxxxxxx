@@ -6,12 +6,13 @@ import (
 	"math/rand"
 	"net/http"
 
+	"github.com/Ron-ttt/xxxxxxxx/internal/app/storage"
 	"github.com/gorilla/mux"
 )
 
 var letters = []byte("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
 
-var m map[string]string
+//var m map[string]string
 
 const localhost = "http://localhost:8080/"
 
@@ -37,7 +38,7 @@ func IndexPage(res http.ResponseWriter, req *http.Request) {
 	length := 6 // Укажите длину строки
 	rez1 := randString(length)
 	rez := localhost + rez1
-	m[rez1] = string(originalURL)
+	storage.AddToMap(rez1, string(originalURL))
 	res.Write([]byte(rez))
 
 }
@@ -47,8 +48,8 @@ func Redirect(res http.ResponseWriter, req *http.Request) {
 
 	id := params["id"]
 
-	originalURL, ok := m[id]
-	if !ok {
+	originalURL, ok := storage.GetValueByKey(id)
+	if ok != nil {
 		res.WriteHeader(http.StatusBadRequest)
 		return
 	}
