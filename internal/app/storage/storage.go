@@ -12,7 +12,7 @@ type MapStorage struct {
 	m map[string]string
 }
 
-func NewMapStorage() *MapStorage {
+func NewMapStorage() Storage {
 	return &MapStorage{
 		m: make(map[string]string),
 	}
