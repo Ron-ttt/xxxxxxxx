@@ -15,7 +15,7 @@ func RemoveFromMap(key string) {
 func GetValueByKey(key string) (string, error) {
 	value, found := m[key]
 	if !found {
-		return "", errors.New("Key not found")
+		return "", errors.New("key not found")
 	}
 	return value, nil
 }
