@@ -3,7 +3,7 @@ package main
 import (
 	"net/http"
 
-	"github.com/Ron-ttt/xxxxxxx/internal/app/handlers"
+	"github.com/Ron-ttt/xxxxxxxx/internal/app/handlers"
 
 	"github.com/gorilla/mux"
 )
