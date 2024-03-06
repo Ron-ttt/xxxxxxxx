@@ -31,10 +31,8 @@ func (hw handlerWrapper) IndexPage(res http.ResponseWriter, req *http.Request) {
 	length := 6 // Укажите длину строки
 	rez1 := utils.RandString(length)
 	rez := localhost + rez1
-
 	hw.storageInterface.Add(rez1, string(originalURL))
 	res.Write([]byte(rez))
-
 }
 
 func (hw handlerWrapper) Redirect(res http.ResponseWriter, req *http.Request) {
