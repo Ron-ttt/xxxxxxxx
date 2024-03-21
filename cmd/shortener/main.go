@@ -16,7 +16,7 @@ func main() {
 	r.HandleFunc("/{id}", hw.Redirect).Methods(http.MethodGet)
 
 	log.Println("server is running")
-	err := http.ListenAndServe(handlers.Localhost, r)
+	err := http.ListenAndServe(hw.Localhost, r)
 
 	if err != nil {
 		panic(err)
