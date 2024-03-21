@@ -17,7 +17,7 @@ import (
 
 func Init() handlerWrapper {
 	var localhost, baseURL = config.Flags()
-	return handlerWrapper{storageInterface: storage.NewMapStorage(), Localhost: localhost, baseURL: baseURL}
+	return handlerWrapper{storageInterface: storage.NewMapStorage(), Localhost: localhost, baseURL: baseURL + "/"}
 
 }
 
