@@ -53,7 +53,7 @@ func Test_handlerWrapper_IndexPage(t *testing.T) { // работает удив�
 		})
 	}
 }
-func TestRedirect(t *testing.T) { // работает на пол шишечки типо негативный
+func Test_handlerWrapper_Redirect(t *testing.T) { // работает на пол шишечки типо негативный
 	type want struct {
 		code        int
 		location    string
