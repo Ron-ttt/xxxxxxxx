@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 
 	"github.com/Ron-ttt/xxxxxxxx/internal/app/storage"
 	"github.com/Ron-ttt/xxxxxxxx/internal/app/utils"
@@ -31,6 +32,10 @@ func (hw handlerWrapper) IndexPage(res http.ResponseWriter, req *http.Request) {
 	originalURL, err := io.ReadAll(req.Body)
 	if err != nil {
 		panic(err)
+	}
+	_, err1 := url.Parse(string(originalURL))
+	if err1 != nil {
+		panic(err1)
 	}
 	fmt.Print(originalURL)
 	res.Header().Set("content-type", "text/plain")

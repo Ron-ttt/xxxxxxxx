@@ -4,7 +4,7 @@ import "errors"
 
 type Storage interface {
 	Add(key string, value string)
-	Remove(key string)
+	//Remove(key string)
 	Get(key string) (string, error)
 }
 
@@ -18,13 +18,13 @@ func NewMapStorage() Storage {
 	}
 }
 
-func (s *MapStorage) Add(key string, value string) {
+func (s *MapStorage) Add(key string, value string) { // я хуй знает как сюда ошибку запихнуть
 	s.m[key] = value
 }
 
-func (s *MapStorage) Remove(key string) {
-	delete(s.m, key)
-}
+// func (s *MapStorage) Remove(key string) {
+// 	delete(s.m, key)
+// }
 
 func (s *MapStorage) Get(key string) (string, error) {
 	value, found := s.m[key]
