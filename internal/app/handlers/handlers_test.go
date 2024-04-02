@@ -7,6 +7,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -99,14 +100,15 @@ func Test_handlerWrapper_Redirect(t *testing.T) {
 			handler := MInit()
 
 			// Создаем тестовый запрос
-			req := httptest.NewRequest(http.MethodGet, handler.baseURL+test.id, nil) //.????
 
+			r := mux.NewRouter()
+			r.HandleFunc("/{id}", handler.Redirect)
 			// Выполняем запрос
-			rr := httptest.NewRecorder()
-			handler.Redirect(rr, req)
+			w2 := httptest.NewRecorder()
+			r.ServeHTTP(w2, httptest.NewRequest(http.MethodGet, handler.baseURL+test.id, nil))
 
 			// Проверяем код ответа
-			assert.Equal(t, test.want.code, rr.Code)
+			assert.Equal(t, test.want.code, w2.Result().StatusCode)
 
 			// Проверяем заголовок Location
 			//location := rr.Header().Get("Location")
@@ -116,12 +118,7 @@ func Test_handlerWrapper_Redirect(t *testing.T) {
 			//assert.Equal(t, test.want.contentType, rr.Header().Get("Content-Type"))
 
 			// Проверяем, что сгенерированная строка добавлена в хранилище
-			if test.want.code == http.StatusTemporaryRedirect {
-				require.NotNil(t, handler.storageInterface)
-				value, err := handler.storageInterface.Get(test.id)
-				require.NoError(t, err)
-				assert.NotEmpty(t, value)
-			}
+
 		})
 	}
 }

@@ -59,7 +59,7 @@ func (hw handlerWrapper) Redirect(res http.ResponseWriter, req *http.Request) { 
 
 	originalURL, ok := hw.storageInterface.Get(id)
 	if ok != nil {
-		res.WriteHeader(http.StatusBadRequest)
+		http.Error(res, "not found", http.StatusBadRequest)
 		return
 	}
 
