@@ -34,11 +34,11 @@ type handlerWrapper struct {
 func (hw handlerWrapper) IndexPage(res http.ResponseWriter, req *http.Request) { // post
 	originalURL, err := io.ReadAll(req.Body)
 	if err != nil {
-		panic(err)
+		http.Error(res, "unable to read body", http.StatusBadRequest)
 	}
-	_, err1 := url.Parse(string(originalURL))
+	_, err1 := url.ParseRequestURI(string(originalURL))
 	if err1 != nil {
-		panic(err1)
+		http.Error(res, "invalid url", http.StatusBadRequest)
 	}
 	fmt.Print(originalURL)
 	res.Header().Set("content-type", "text/plain")

@@ -14,8 +14,8 @@ import (
 
 func Test_handlerWrapper_IndexPage(t *testing.T) { // работает удивительно ведь не я это делала
 	type want struct { // я не ебу что для негативного надо работает и заебись
-		code int
-		//response    string
+		code        int
+		request     string
 		contentType string
 	}
 	tests := []struct {
@@ -25,34 +25,37 @@ func Test_handlerWrapper_IndexPage(t *testing.T) { // работает удив�
 		{
 			name: "positive test #1",
 			want: want{
-				code: 201,
-				//response:    "https://example.com",
+				code:        201,
+				request:     "https://example.com",
 				contentType: "text/plain",
 			},
 		},
 		{
 			name: "negative test #1",
 			want: want{
-				code: 400,
-				//response:    "https://example.com",
-				contentType: "text/plain",
+				code:        400,
+				request:     "",
+				contentType: "text/plain; charset=utf-8",
 			},
 		},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			hw := Init()
-			reqBody := strings.NewReader("https://example.com")
-			request := httptest.NewRequest(http.MethodPost, "/", reqBody)
+			hw := MInit()
+
+			r := mux.NewRouter()
+			r.HandleFunc("/", hw.IndexPage)
+			w2 := strings.NewReader(test.want.request)
+
+			request := httptest.NewRequest(http.MethodPost, hw.baseURL, w2)
 			// создаём новый Recorder
 			w := httptest.NewRecorder()
-			hw.IndexPage(w, request)
-
+			r.ServeHTTP(w, request)
 			res := w.Result()
 			// проверяем код ответа
-			assert.Equal(t, test.want.code, res.StatusCode)
+			assert.Equal(t, test.want.code, w.Result().StatusCode)
 			// получаем и проверяем тело запроса
-			defer res.Body.Close()
+			defer w.Result().Body.Close()
 			resBody, err := io.ReadAll(res.Body)
 
 			require.NoError(t, err)
