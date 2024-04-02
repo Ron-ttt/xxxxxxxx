@@ -111,7 +111,9 @@ func Test_handlerWrapper_Redirect(t *testing.T) {
 			r.ServeHTTP(w2, httptest.NewRequest(http.MethodGet, handler.baseURL+test.id, nil))
 
 			// Проверяем код ответа
-			assert.Equal(t, test.want.code, w2.Result().StatusCode)
+			res := w2.Result()
+			defer res.Body.Close()
+			assert.Equal(t, test.want.code, res.StatusCode)
 			defer w2.Result().Body.Close()
 			// Проверяем заголовок Location
 			location := w2.Header().Get("Location")
