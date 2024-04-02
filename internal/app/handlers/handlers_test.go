@@ -63,62 +63,43 @@ func Test_handlerWrapper_IndexPage(t *testing.T) { // работает удив�
 
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 func Test_handlerWrapper_Redirect(t *testing.T) {
-	// type want struct {
-	// 	code        int
-	// 	location    string
-	// 	contentType string
-	// }
-
-	// tests := []struct {
-	// 	name string
-	// 	id   string
-	// 	want want
-	// }{
-	// 	{
-	// 		name: "positive test #1",
-	// 		id:   "123456",
-	// 		want: want{
-	// 			code:        http.StatusTemporaryRedirect,
-	// 			location:    "https://example.com",
-	// 			contentType: "",
-	// 		},
-	// 	},
-	// 	{
-	// 		name: "negative test #1",
-	// 		id:   "invalid-id",
-	// 		want: want{
-	// 			code:        http.StatusBadRequest,
-	// 			location:    "",
-	// 			contentType: "",
-	// 		},
-	// 	},
-	// }
 	type want struct {
-		code int
+		code        int
+		location    string
+		contentType string
 	}
-	tests := []struct {
-		name    string
-		want    want
-		request string
-	}{
 
-		{name: "Positive",
-			want:    want{code: 307},
-			request: "http://localhost:8080/shortURL",
+	tests := []struct {
+		name string
+		id   string
+		want want
+	}{
+		{
+			name: "positive test #1",
+			id:   "123456",
+			want: want{
+				code:        http.StatusTemporaryRedirect,
+				location:    "http://love_nika",
+				contentType: "",
+			},
 		},
-		{name: "Negative",
-			want:    want{code: 400},
-			request: "http://localhost:8080/aaaaaaaaaaa",
+		{
+			name: "negative test #1",
+			id:   "invalid",
+			want: want{
+				code:        http.StatusBadRequest,
+				location:    "",
+				contentType: "",
+			},
 		},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			// Создаем тестовый обработчик
-			handler := Init()
-			handler.storageInterface.Add(test.id, test.want.location)
+			handler := MInit()
 
 			// Создаем тестовый запрос
-			req := httptest.NewRequest(http.MethodGet, handler.baseURL+"/"+test.id, nil) //.????
+			req := httptest.NewRequest(http.MethodGet, handler.baseURL+test.id, nil) //.????
 
 			// Выполняем запрос
 			rr := httptest.NewRecorder()

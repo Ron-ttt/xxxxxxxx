@@ -21,6 +21,9 @@ func Init() handlerWrapper {
 	return handlerWrapper{storageInterface: storage.NewMapStorage(), Localhost: localhost, baseURL: baseURL + "/"}
 
 }
+func MInit() handlerWrapper {
+	return handlerWrapper{storageInterface: storage.NewMockStorage(), Localhost: "localhost:8080", baseURL: "http://localhost:8080/"}
+}
 
 type handlerWrapper struct {
 	storageInterface storage.Storage
