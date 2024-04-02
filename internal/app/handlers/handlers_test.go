@@ -52,8 +52,9 @@ func Test_handlerWrapper_IndexPage(t *testing.T) { // работает удив�
 			w := httptest.NewRecorder()
 			r.ServeHTTP(w, request)
 			res := w.Result()
+			defer res.Body.Close()
 			// проверяем код ответа
-			assert.Equal(t, test.want.code, w.Result().StatusCode)
+			assert.Equal(t, test.want.code, res.StatusCode)
 			// получаем и проверяем тело запроса
 			defer w.Result().Body.Close()
 			resBody, err := io.ReadAll(res.Body)
