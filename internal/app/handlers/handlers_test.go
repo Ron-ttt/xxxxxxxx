@@ -62,7 +62,6 @@ func Test_handlerWrapper_IndexPage(t *testing.T) { // работает удив�
 	}
 }
 
-// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 func Test_handlerWrapper_Redirect(t *testing.T) {
 	type want struct {
 		code        int
@@ -109,61 +108,10 @@ func Test_handlerWrapper_Redirect(t *testing.T) {
 
 			// Проверяем код ответа
 			assert.Equal(t, test.want.code, w2.Result().StatusCode)
-
+			defer w2.Result().Body.Close()
 			// Проверяем заголовок Location
-			//location := rr.Header().Get("Location")
-			//assert.Equal(t, test.want.location, location)
-
-			// Проверяем тип контента
-			//assert.Equal(t, test.want.contentType, rr.Header().Get("Content-Type"))
-
-			// Проверяем, что сгенерированная строка добавлена в хранилище
-
+			location := w2.Header().Get("Location")
+			assert.Equal(t, test.want.location, location)
 		})
 	}
 }
-
-// func Test_handlerWrapper_Redirect(t *testing.T) {
-// 	type want struct {
-// 		code int
-// 		//response string
-// 	}
-// 	tests := []struct {
-// 		name string
-// 		want want
-// 	}{
-// 		{
-// 			name: "positive test #1",
-// 			want: want{
-// 				code: 307,
-// 			},
-// 		},
-// 		{
-// 			name: "negative test #1",
-// 			want: want{
-// 				code: 400,
-// 			},
-// 		},
-// 	}
-// 	for _, test := range tests {
-// 		t.Run(test.name, func(t *testing.T) {
-// 			// здесь будет запрос и проверка ответа
-// 			hw := Init()
-// 			request := httptest.NewRequest(http.MethodGet, "/status", nil)
-// 			// создаём новый Recorder
-// 			w := httptest.NewRecorder()
-// 			hw.Redirect(w, request)
-
-// 			res := w.Result()
-// 			// проверяем код ответа
-// 			assert.Equal(t, test.want.code, res.StatusCode)
-// 			// получаем и проверяем тело запроса
-// 			//defer res.Body.Close()
-// 			//resBody, err := io.ReadAll(res.Body)
-
-// 			//require.NoError(t, err)
-// 			//assert.Equal(t, test.want.response, string(resBody))
-
-// 		})
-// 	}
-// }
