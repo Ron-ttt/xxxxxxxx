@@ -16,7 +16,7 @@ import (
 )
 
 type URLRegistry struct {
-	Url string `json:"url"`
+	URL string `json:"url"`
 }
 
 type URLRegistryResult struct {
@@ -62,13 +62,13 @@ func (hw handlerWrapper) IndexPage(res http.ResponseWriter, req *http.Request) {
 }
 
 func (hw handlerWrapper) IndexPageJ(res http.ResponseWriter, req *http.Request) { // post
-	var longUrl URLRegistry
-	if err := json.NewDecoder(req.Body).Decode(&longUrl); err != nil {
+	var longURL URLRegistry
+	if err := json.NewDecoder(req.Body).Decode(&longURL); err != nil {
 		http.Error(res, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	_, err1 := url.ParseRequestURI(longUrl.Url)
+	_, err1 := url.ParseRequestURI(longURL.URL)
 	if err1 != nil {
 		http.Error(res, "invalid url", http.StatusBadRequest)
 	}
@@ -80,7 +80,7 @@ func (hw handlerWrapper) IndexPageJ(res http.ResponseWriter, req *http.Request) 
 	randomString := utils.RandString(length)
 	var rez URLRegistryResult
 	rez.Result = hw.baseURL + randomString
-	hw.storageInterface.Add(randomString, string(longUrl.Url))
+	hw.storageInterface.Add(randomString, string(longURL.URL))
 	if err := json.NewEncoder(res).Encode(rez); err != nil {
 		http.Error(res, err.Error(), http.StatusInternalServerError)
 		return
