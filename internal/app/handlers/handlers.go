@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -13,6 +14,14 @@ import (
 
 	"github.com/gorilla/mux"
 )
+
+type URLRegistry struct {
+	Url string `json:"url"`
+}
+
+type URLRegistryResult struct {
+	Result string `json:"result"`
+}
 
 // var localhost = "http://" + Localhost + "/"
 
@@ -50,6 +59,32 @@ func (hw handlerWrapper) IndexPage(res http.ResponseWriter, req *http.Request) {
 	hw.storageInterface.Add(randomString, string(originalURL))
 	res.Write([]byte(rez))
 
+}
+
+func (hw handlerWrapper) IndexPageJ(res http.ResponseWriter, req *http.Request) { // post
+	var longUrl URLRegistry
+	if err := json.NewDecoder(req.Body).Decode(&longUrl); err != nil {
+		http.Error(res, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	_, err1 := url.ParseRequestURI(longUrl.Url)
+	if err1 != nil {
+		http.Error(res, "invalid url", http.StatusBadRequest)
+	}
+
+	res.Header().Set("content-type", "application/json")
+	res.WriteHeader(http.StatusCreated)
+
+	length := 6 // Укажите длину строки
+	randomString := utils.RandString(length)
+	var rez URLRegistryResult
+	rez.Result = hw.baseURL + randomString
+	hw.storageInterface.Add(randomString, string(longUrl.Url))
+	if err := json.NewEncoder(res).Encode(rez); err != nil {
+		http.Error(res, err.Error(), http.StatusInternalServerError)
+		return
+	}
 }
 
 func (hw handlerWrapper) Redirect(res http.ResponseWriter, req *http.Request) { //get

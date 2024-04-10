@@ -16,6 +16,7 @@ func main() {
 	r.Use(logger.Logger1)
 	r.HandleFunc("/", hw.IndexPage).Methods(http.MethodPost)
 	r.HandleFunc("/{id}", hw.Redirect).Methods(http.MethodGet)
+	r.HandleFunc("/api/shorten", hw.IndexPageJ).Methods(http.MethodPost)
 
 	log.Println("server is running")
 	err := http.ListenAndServe(hw.Localhost, r)
