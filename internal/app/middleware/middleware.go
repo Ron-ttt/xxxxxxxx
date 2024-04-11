@@ -37,23 +37,35 @@ type gzipWriter struct {
 }
 
 func (w gzipWriter) Write(b []byte) (int, error) {
-	// w.Writer будет отвечать за gzip-сжатие, поэтому пишем в него
 	return w.Writer.Write(b)
 }
+
+func gzipDecode(r *http.Request) (io.ReadCloser, error) {
+	if r.Header.Get("Content-Encoding") == "gzip" {
+		gz, err := gzip.NewReader(r.Body)
+		if err != nil {
+			return nil, err
+		}
+		defer gz.Close()
+		return gz, nil
+	}
+
+	return r.Body, nil
+}
+
 func GzipMiddleware(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// проверяем, что клиент поддерживает gzip-сжатие;
-		// это упрощённый пример, в реальном приложении следует проверять все
-		// значения r.Header.Values("Accept-Encoding") и разбирать строку
-		// на составные части, чтобы избежать неожиданных результатов
 		if !strings.Contains(r.Header.Get("Accept-Encoding"), "gzip") {
-			// если gzip не поддерживается, передаём управление
-			// дальше без изменений
+			var err error
+			r.Body, err = gzipDecode(r)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusBadRequest)
+				return
+			}
 			h.ServeHTTP(w, r)
 			return
 		}
 
-		// создаём gzip.Writer поверх текущего w
 		gz, err := gzip.NewWriterLevel(w, gzip.BestSpeed)
 		if err != nil {
 			io.WriteString(w, err.Error())
@@ -61,8 +73,12 @@ func GzipMiddleware(h http.Handler) http.Handler {
 		}
 		defer gz.Close()
 
+		r.Body, err = gzipDecode(r)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+		}
+
 		w.Header().Set("Content-Encoding", "gzip")
-		// передаём обработчику страницы переменную типа gzipWriter для вывода данных
 		h.ServeHTTP(gzipWriter{ResponseWriter: w, Writer: gz}, r)
 	})
 }
