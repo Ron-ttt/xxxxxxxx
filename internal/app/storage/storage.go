@@ -14,39 +14,44 @@ type Storage interface {
 
 type MapStorage struct {
 	m map[string]string
-	i int
 }
 
+var i int
+
 type FileJ struct {
-	Uuid         int    `json:"uuid"`
-	Short_url    string `json:"short_url"`
-	Original_url string `json:"original_url"`
+	Uuid        int    `json:"uuid"`
+	ShortURL    string `json:"short_url"`
+	OriginalURL string `json:"original_url"`
 }
 
 func NewMapStorage() Storage {
 	return &MapStorage{
-		m: make(map[string]string),
-		i: 1}
+		m: make(map[string]string)}
 }
 
 func (s *MapStorage) Add(key string, value string, f string) error {
 	if len(f) > 0 {
-		file, err := os.OpenFile(f, os.O_APPEND|os.O_CREATE, 0)
-		if err != nil {
-			return err
-		}
-		defer file.Close()
-		var data = FileJ{Uuid: s.i, Short_url: key, Original_url: value}
-		d, _ := json.Marshal(data)
-		d = append(d, '\n')
-		_, err = file.Write(d)
-		if err != nil {
-			return err
-		}
+		addfile(key, value, f)
 		s.m[key] = value
-		s.i++
 	}
 	s.m[key] = value
+	return nil
+}
+
+func addfile(key string, value string, f string) error {
+	file, err := os.OpenFile(f, os.O_APPEND|os.O_CREATE, 0)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+	var data = FileJ{Uuid: i, ShortURL: key, OriginalURL: value}
+	d, _ := json.Marshal(data)
+	d = append(d, '\n')
+	_, err = file.Write(d)
+	if err != nil {
+		return err
+	}
+	i++
 	return nil
 }
 
