@@ -19,7 +19,7 @@ type MapStorage struct {
 var i int
 
 type FileJ struct {
-	Uuid        int    `json:"uuid"`
+	UUID        int    `json:"uuid"`
 	ShortURL    string `json:"short_url"`
 	OriginalURL string `json:"original_url"`
 }
@@ -44,7 +44,7 @@ func addfile(key string, value string, f string) error {
 		return err
 	}
 	defer file.Close()
-	var data = FileJ{Uuid: i, ShortURL: key, OriginalURL: value}
+	var data = FileJ{UUID: i, ShortURL: key, OriginalURL: value}
 	d, _ := json.Marshal(data)
 	d = append(d, '\n')
 	_, err = file.Write(d)
