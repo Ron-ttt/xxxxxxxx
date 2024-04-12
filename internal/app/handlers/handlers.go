@@ -26,8 +26,8 @@ type URLRegistryResult struct {
 // var localhost = "http://" + Localhost + "/"
 
 func Init() handlerWrapper {
-	var localhost, baseURL = config.Flags()
-	return handlerWrapper{storageInterface: storage.NewMapStorage(), Localhost: localhost, baseURL: baseURL + "/"}
+	var localhost, baseURL, filestorage = config.Flags()
+	return handlerWrapper{storageInterface: storage.NewMapStorage(), Localhost: localhost, baseURL: baseURL + "/", filestorage: filestorage}
 
 }
 func MInit() handlerWrapper {
@@ -38,6 +38,7 @@ type handlerWrapper struct {
 	storageInterface storage.Storage
 	Localhost        string
 	baseURL          string
+	filestorage      string
 }
 
 func (hw handlerWrapper) IndexPage(res http.ResponseWriter, req *http.Request) { // post
@@ -56,7 +57,10 @@ func (hw handlerWrapper) IndexPage(res http.ResponseWriter, req *http.Request) {
 	length := 6 // Укажите длину строки
 	randomString := utils.RandString(length)
 	rez := hw.baseURL + randomString
-	hw.storageInterface.Add(randomString, string(originalURL))
+	err = hw.storageInterface.Add(randomString, string(originalURL), hw.filestorage)
+	if err != nil {
+		http.Error(res, "error adding", http.StatusBadRequest)
+	}
 	res.Write([]byte(rez))
 
 }
@@ -80,7 +84,10 @@ func (hw handlerWrapper) IndexPageJ(res http.ResponseWriter, req *http.Request) 
 	randomString := utils.RandString(length)
 	var rez URLRegistryResult
 	rez.Result = hw.baseURL + randomString
-	hw.storageInterface.Add(randomString, string(longURL.URL))
+	err := hw.storageInterface.Add(randomString, string(longURL.URL), hw.filestorage)
+	if err != nil {
+		http.Error(res, "error adding", http.StatusBadRequest)
+	}
 	if err := json.NewEncoder(res).Encode(rez); err != nil {
 		http.Error(res, err.Error(), http.StatusInternalServerError)
 		return
@@ -92,7 +99,7 @@ func (hw handlerWrapper) Redirect(res http.ResponseWriter, req *http.Request) { 
 
 	id := params["id"]
 
-	originalURL, ok := hw.storageInterface.Get(id)
+	originalURL, ok := hw.storageInterface.Get(id, hw.filestorage)
 	if ok != nil {
 		http.Error(res, "not found", http.StatusBadRequest)
 		return
