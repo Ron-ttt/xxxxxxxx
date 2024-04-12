@@ -9,6 +9,7 @@ import (
 type Storage interface {
 	Add(key string, value string, f string) error
 	//Remove(key string)
+	ReadFromFile(filestorage string)
 	Get(key string, f string) (string, error)
 }
 
@@ -55,9 +56,20 @@ func addfile(key string, value string, f string) error {
 	return nil
 }
 
-// func (s *MapStorage) Remove(key string) {
-// 	delete(s.m, key)
-// }
+//	func (s *MapStorage) Remove(key string) {
+//		delete(s.m, key)
+//	}
+func (s *MapStorage) ReadFromFile(filename string) {
+	file, _ := os.Open(filename)
+	defer file.Close()
+
+	decoder := json.NewDecoder(file)
+	for decoder.More() {
+		var data FileJ
+		decoder.Decode(&data)
+		s.m[data.ShortURL] = data.OriginalURL
+	}
+}
 
 func (s *MapStorage) Get(key string, f string) (string, error) {
 	value, found := s.m[key]
