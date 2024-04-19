@@ -42,7 +42,11 @@ func (s *FileStorage) Add(key string, value string) error {
 	if err != nil {
 		return err
 	}
-	_, err = s.file.Write(jsonData)
+	f, err := os.OpenFile(s.file.Name(), os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0777)
+	if err != nil {
+		return err
+	}
+	_, err = f.Write(append(jsonData, '\n'))
 	if err != nil {
 		return err
 	}
