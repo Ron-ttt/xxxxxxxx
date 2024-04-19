@@ -27,7 +27,7 @@ type URLRegistryResult struct {
 // var localhost = "http://" + Localhost + "/"
 
 func Init() handlerWrapper {
-	var localhost, baseURL, storageType = config.Flags()
+	localhost, baseURL, storageType := config.Flags()
 	if storageType != "" {
 		fileStorage, err := storage.NewFileStorage(storageType)
 		if err != nil {
