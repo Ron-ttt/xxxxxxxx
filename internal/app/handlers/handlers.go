@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
 
@@ -26,7 +27,14 @@ type URLRegistryResult struct {
 // var localhost = "http://" + Localhost + "/"
 
 func Init() handlerWrapper {
-	var localhost, baseURL = config.Flags()
+	var localhost, baseURL, storageType = config.Flags()
+	if storageType != "" {
+		fileStorage, err := storage.NewFileStorage(storageType)
+		if err != nil {
+			log.Fatal("unable to create file storage")
+		}
+		return handlerWrapper{storageInterface: fileStorage, Localhost: localhost, baseURL: baseURL + "/"}
+	}
 	return handlerWrapper{storageInterface: storage.NewMapStorage(), Localhost: localhost, baseURL: baseURL + "/"}
 
 }
