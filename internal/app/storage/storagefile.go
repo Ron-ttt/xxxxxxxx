@@ -10,7 +10,7 @@ type FileStorage struct {
 	memoryStorage Storage
 }
 
-type FileJson struct {
+type FileJSON struct {
 	UUID        int    `json:"uuid"`
 	ShortURL    string `json:"short_url"`
 	OriginalURL string `json:"original_url"`
@@ -25,7 +25,7 @@ func NewFileStorage(filename string) (Storage, error) {
 	decoder := json.NewDecoder(f)
 	memoryStorage := NewMapStorage()
 	for decoder.More() {
-		var data FileJson
+		var data FileJSON
 		decoder.Decode(&data)
 		memoryStorage.Add(data.ShortURL, data.OriginalURL)
 	}
@@ -37,7 +37,7 @@ func NewFileStorage(filename string) (Storage, error) {
 
 func (s *FileStorage) Add(key string, value string) error {
 	s.memoryStorage.Add(key, value)
-	data := FileJson{UUID: 1, ShortURL: key, OriginalURL: value}
+	data := FileJSON{UUID: 1, ShortURL: key, OriginalURL: value}
 	jsonData, err := json.Marshal(data)
 	if err != nil {
 		return err
