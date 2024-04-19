@@ -27,16 +27,16 @@ type URLRegistryResult struct {
 // var localhost = "http://" + Localhost + "/"
 
 func Init() handlerWrapper {
-	var localhost, baseURL, file = config.Flags()
-	if file == "" {
-		return handlerWrapper{storageInterface: storage.NewMapStorage(), Localhost: localhost, baseURL: baseURL + "/"}
-	} else {
-		s, err := storage.NewFileStorage(file)
+	localhost, baseURL, storageType := config.Flags()
+	if storageType != "" {
+		fileStorage, err := storage.NewFileStorage(storageType)
 		if err != nil {
-			log.Fatal(err)
+			log.Fatal("unable to create file storage")
 		}
-		return handlerWrapper{storageInterface: s, Localhost: localhost, baseURL: baseURL + "/"}
+		return handlerWrapper{storageInterface: fileStorage, Localhost: localhost, baseURL: baseURL + "/"}
 	}
+	return handlerWrapper{storageInterface: storage.NewMapStorage(), Localhost: localhost, baseURL: baseURL + "/"}
+
 }
 func MInit() handlerWrapper {
 	return handlerWrapper{storageInterface: storage.NewMockStorage(), Localhost: "localhost:8080", baseURL: "http://localhost:8080/"}

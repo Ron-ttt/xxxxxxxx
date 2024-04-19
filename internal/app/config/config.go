@@ -22,5 +22,6 @@ func Flags() (string, string, string) {
 	if envfilestorage := os.Getenv("FILE_STORAGE_PATH"); envfilestorage != "" {
 		*filestorage = envfilestorage
 	}
+
 	return *address, *baseURL, *filestorage
 }
