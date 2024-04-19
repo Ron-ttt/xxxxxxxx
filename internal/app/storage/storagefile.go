@@ -17,7 +17,7 @@ type FileJSON struct {
 }
 
 func NewFileStorage(filename string) (Storage, error) {
-	f, err := os.OpenFile("tmp/"+filename, os.O_RDONLY|os.O_CREATE, 0777)
+	f, err := os.OpenFile("./tmp/"+filename, os.O_RDONLY|os.O_CREATE, 0777)
 	if err != nil {
 		return nil, err
 	}
