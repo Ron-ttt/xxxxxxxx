@@ -1,17 +1,19 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"net/url"
-
-	"github.com/Ron-ttt/xxxxxxxx/internal/app/storage"
-	"github.com/Ron-ttt/xxxxxxxx/internal/app/utils"
+	"os"
 
 	"github.com/Ron-ttt/xxxxxxxx/internal/app/config"
+	"github.com/Ron-ttt/xxxxxxxx/internal/app/storage"
+	"github.com/Ron-ttt/xxxxxxxx/internal/app/utils"
+	"github.com/jackc/pgx/v5"
 
 	"github.com/gorilla/mux"
 )
@@ -27,15 +29,15 @@ type URLRegistryResult struct {
 // var localhost = "http://" + Localhost + "/"
 
 func Init() handlerWrapper {
-	localhost, baseURL, storageType := config.Flags()
+	localhost, baseURL, storageType, dbAdress := config.Flags()
 	if storageType != "" {
 		fileStorage, err := storage.NewFileStorage(storageType)
 		if err != nil {
 			log.Fatal("unable to create file storage")
 		}
-		return handlerWrapper{storageInterface: fileStorage, Localhost: localhost, baseURL: baseURL + "/"}
+		return handlerWrapper{storageInterface: fileStorage, Localhost: localhost, baseURL: baseURL + "/", dbAdress: dbAdress}
 	}
-	return handlerWrapper{storageInterface: storage.NewMapStorage(), Localhost: localhost, baseURL: baseURL + "/"}
+	return handlerWrapper{storageInterface: storage.NewMapStorage(), Localhost: localhost, baseURL: baseURL + "/", dbAdress: dbAdress}
 
 }
 func MInit() handlerWrapper {
@@ -46,6 +48,7 @@ type handlerWrapper struct {
 	storageInterface storage.Storage
 	Localhost        string
 	baseURL          string
+	dbAdress         string
 }
 
 func (hw handlerWrapper) IndexPage(res http.ResponseWriter, req *http.Request) { // post
@@ -108,5 +111,24 @@ func (hw handlerWrapper) Redirect(res http.ResponseWriter, req *http.Request) { 
 
 	res.Header().Set("Location", originalURL)
 	res.WriteHeader(http.StatusTemporaryRedirect)
+
+}
+
+func (hw handlerWrapper) BD(res http.ResponseWriter, req *http.Request) {
+
+	conn, err := pgx.Connect(context.Background(), hw.dbAdress)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
+		os.Exit(1)
+	}
+	defer conn.Close(context.Background())
+
+	err = conn.Ping(context.Background())
+	if err != nil {
+		http.Error(res, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
+	res.WriteHeader(http.StatusOK)
 
 }

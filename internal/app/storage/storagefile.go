@@ -22,6 +22,7 @@ func NewFileStorage(filename string) (Storage, error) {
 		return nil, err
 	}
 	defer f.Close()
+
 	decoder := json.NewDecoder(f)
 	memoryStorage := NewMapStorage()
 	for decoder.More() {
@@ -29,6 +30,7 @@ func NewFileStorage(filename string) (Storage, error) {
 		decoder.Decode(&data)
 		memoryStorage.Add(data.ShortURL, data.OriginalURL)
 	}
+
 	return &FileStorage{
 		file:          f,
 		memoryStorage: memoryStorage,
@@ -46,6 +48,8 @@ func (s *FileStorage) Add(key string, value string) error {
 	if err != nil {
 		return err
 	}
+	defer f.Close()
+
 	_, err = f.Write(append(jsonData, '\n'))
 	if err != nil {
 		return err
