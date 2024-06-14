@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -8,10 +9,10 @@ import (
 	"net/http"
 	"net/url"
 
+	"github.com/Ron-ttt/xxxxxxxx/internal/app/config"
 	"github.com/Ron-ttt/xxxxxxxx/internal/app/storage"
 	"github.com/Ron-ttt/xxxxxxxx/internal/app/utils"
-
-	"github.com/Ron-ttt/xxxxxxxx/internal/app/config"
+	_ "github.com/jackc/pgx/v5/stdlib"
 
 	"github.com/gorilla/mux"
 )
@@ -27,15 +28,15 @@ type URLRegistryResult struct {
 // var localhost = "http://" + Localhost + "/"
 
 func Init() handlerWrapper {
-	localhost, baseURL, storageType := config.Flags()
+	localhost, baseURL, storageType, dbAdress := config.Flags()
 	if storageType != "" {
 		fileStorage, err := storage.NewFileStorage(storageType)
 		if err != nil {
 			log.Fatal("unable to create file storage")
 		}
-		return handlerWrapper{storageInterface: fileStorage, Localhost: localhost, baseURL: baseURL + "/"}
+		return handlerWrapper{storageInterface: fileStorage, Localhost: localhost, baseURL: baseURL + "/", dbAdress: dbAdress}
 	}
-	return handlerWrapper{storageInterface: storage.NewMapStorage(), Localhost: localhost, baseURL: baseURL + "/"}
+	return handlerWrapper{storageInterface: storage.NewMapStorage(), Localhost: localhost, baseURL: baseURL + "/", dbAdress: dbAdress}
 
 }
 func MInit() handlerWrapper {
@@ -46,6 +47,7 @@ type handlerWrapper struct {
 	storageInterface storage.Storage
 	Localhost        string
 	baseURL          string
+	dbAdress         string
 }
 
 func (hw handlerWrapper) IndexPage(res http.ResponseWriter, req *http.Request) { // post
@@ -109,4 +111,21 @@ func (hw handlerWrapper) Redirect(res http.ResponseWriter, req *http.Request) { 
 	res.Header().Set("Location", originalURL)
 	res.WriteHeader(http.StatusTemporaryRedirect)
 
+}
+
+func (hw handlerWrapper) BD(res http.ResponseWriter, req *http.Request) {
+	db, err1 := sql.Open("pgx", hw.dbAdress)
+	if err1 != nil {
+		http.Error(res, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+	defer db.Close()
+
+	err := db.Ping()
+	if err != nil {
+		http.Error(res, "Internal Server Error", http.StatusInternalServerError)
+		return
+	} else {
+		res.WriteHeader(http.StatusOK)
+	}
 }
