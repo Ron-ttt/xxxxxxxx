@@ -1,18 +1,19 @@
 package handlers
 
 import (
-	"database/sql"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"net/url"
+	"os"
 
 	"github.com/Ron-ttt/xxxxxxxx/internal/app/config"
 	"github.com/Ron-ttt/xxxxxxxx/internal/app/storage"
 	"github.com/Ron-ttt/xxxxxxxx/internal/app/utils"
-	_ "github.com/jackc/pgx/v5/stdlib"
+	"github.com/jackc/pgx/v5"
 
 	"github.com/gorilla/mux"
 )
@@ -114,18 +115,20 @@ func (hw handlerWrapper) Redirect(res http.ResponseWriter, req *http.Request) { 
 }
 
 func (hw handlerWrapper) BD(res http.ResponseWriter, req *http.Request) {
-	db, err1 := sql.Open("pgx", hw.dbAdress)
-	if err1 != nil {
-		http.Error(res, "Internal Server Error", http.StatusInternalServerError)
-		return
-	}
-	defer db.Close()
 
-	err := db.Ping()
+	conn, err := pgx.Connect(context.Background(), hw.dbAdress)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
+		os.Exit(1)
+	}
+	defer conn.Close(context.Background())
+
+	err = conn.Ping(context.Background())
 	if err != nil {
 		http.Error(res, "Internal Server Error", http.StatusInternalServerError)
 		return
-	} else {
-		res.WriteHeader(http.StatusOK)
 	}
+
+	res.WriteHeader(http.StatusOK)
+
 }
