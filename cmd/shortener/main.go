@@ -13,10 +13,11 @@ func main() {
 	hw := handlers.Init()
 	r := mux.NewRouter()
 	r.Use(middleware.Logger1, middleware.GzipMiddleware)
+	r.HandleFunc("/ping", hw.BD).Methods(http.MethodGet)
 	r.HandleFunc("/", hw.IndexPage).Methods(http.MethodPost)
 	r.HandleFunc("/{id}", hw.Redirect).Methods(http.MethodGet)
 	r.HandleFunc("/api/shorten", hw.IndexPageJ).Methods(http.MethodPost)
-	r.HandleFunc("/ping", hw.BD).Methods(http.MethodGet)
+
 	log.Println("server is running")
 	err := http.ListenAndServe(hw.Localhost, r)
 
