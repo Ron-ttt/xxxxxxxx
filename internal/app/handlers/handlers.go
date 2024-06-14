@@ -1,8 +1,10 @@
 package handlers
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
 
@@ -14,10 +16,25 @@ import (
 	"github.com/gorilla/mux"
 )
 
+type URLRegistry struct {
+	URL string `json:"url"`
+}
+
+type URLRegistryResult struct {
+	Result string `json:"result"`
+}
+
 // var localhost = "http://" + Localhost + "/"
 
 func Init() handlerWrapper {
-	var localhost, baseURL = config.Flags()
+	localhost, baseURL, storageType := config.Flags()
+	if storageType != "" {
+		fileStorage, err := storage.NewFileStorage(storageType)
+		if err != nil {
+			log.Fatal("unable to create file storage")
+		}
+		return handlerWrapper{storageInterface: fileStorage, Localhost: localhost, baseURL: baseURL + "/"}
+	}
 	return handlerWrapper{storageInterface: storage.NewMapStorage(), Localhost: localhost, baseURL: baseURL + "/"}
 
 }
@@ -50,6 +67,32 @@ func (hw handlerWrapper) IndexPage(res http.ResponseWriter, req *http.Request) {
 	hw.storageInterface.Add(randomString, string(originalURL))
 	res.Write([]byte(rez))
 
+}
+
+func (hw handlerWrapper) IndexPageJ(res http.ResponseWriter, req *http.Request) { // post
+	var longURL URLRegistry
+	if err := json.NewDecoder(req.Body).Decode(&longURL); err != nil {
+		http.Error(res, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	_, err1 := url.ParseRequestURI(longURL.URL)
+	if err1 != nil {
+		http.Error(res, "invalid url", http.StatusBadRequest)
+	}
+
+	res.Header().Set("content-type", "application/json")
+	res.WriteHeader(http.StatusCreated)
+
+	length := 6 // Укажите длину строки
+	randomString := utils.RandString(length)
+	var rez URLRegistryResult
+	rez.Result = hw.baseURL + randomString
+	hw.storageInterface.Add(randomString, string(longURL.URL))
+	if err := json.NewEncoder(res).Encode(rez); err != nil {
+		http.Error(res, err.Error(), http.StatusInternalServerError)
+		return
+	}
 }
 
 func (hw handlerWrapper) Redirect(res http.ResponseWriter, req *http.Request) { //get

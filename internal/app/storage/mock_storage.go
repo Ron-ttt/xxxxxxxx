@@ -8,7 +8,8 @@ func NewMockStorage() Storage {
 	return &MStorage{} // да пошел ты нахуй пидорас ебучий
 }
 
-func (s *MStorage) Add(key string, value string) {
+func (s *MStorage) Add(key string, value string) error {
+	return nil
 }
 
 func (s *MStorage) Get(key string) (string, error) {

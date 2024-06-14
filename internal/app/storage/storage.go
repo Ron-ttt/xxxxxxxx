@@ -3,7 +3,7 @@ package storage
 import "errors"
 
 type Storage interface {
-	Add(key string, value string)
+	Add(key string, value string) error
 	//Remove(key string)
 	Get(key string) (string, error)
 }
@@ -18,8 +18,9 @@ func NewMapStorage() Storage {
 	}
 }
 
-func (s *MapStorage) Add(key string, value string) { // я хуй знает как сюда ошибку запихнуть
+func (s *MapStorage) Add(key string, value string) error { // я хуй знает как сюда ошибку запихнуть
 	s.m[key] = value
+	return nil
 }
 
 // func (s *MapStorage) Remove(key string) {
