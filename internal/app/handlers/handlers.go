@@ -30,8 +30,12 @@ type URLRegistryResult struct {
 
 func Init() handlerWrapper {
 	localhost, baseURL, storageType, dbAdress := config.Flags()
-	if dbAdress!=""{
-		return handlerWrapper{storageInterface: , Localhost: localhost, baseURL: baseURL + "/", dbAdress: dbAdress}
+	if dbAdress != "" {
+		DbStorage, err := storage.NewDbStorage(dbAdress)
+		if err != nil {
+			log.Fatal("unable to create db storage")
+		}
+		return handlerWrapper{storageInterface: DbStorage, Localhost: localhost, baseURL: baseURL + "/", dbAdress: dbAdress}
 	}
 	if storageType != "" {
 		fileStorage, err := storage.NewFileStorage(storageType)
