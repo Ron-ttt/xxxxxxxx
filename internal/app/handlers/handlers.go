@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"net/url"
 
@@ -35,10 +34,9 @@ func Init() handlerWrapper {
 	}
 	if storageType != "" {
 		fileStorage, err := storage.NewFileStorage(storageType)
-		if err != nil {
-			log.Fatal("unable to create file storage")
+		if err == nil {
+			return handlerWrapper{storageInterface: fileStorage, Localhost: localhost, baseURL: baseURL + "/"}
 		}
-		return handlerWrapper{storageInterface: fileStorage, Localhost: localhost, baseURL: baseURL + "/"}
 	}
 	return handlerWrapper{storageInterface: storage.NewMapStorage(), Localhost: localhost, baseURL: baseURL + "/"}
 }
@@ -118,7 +116,9 @@ func (hw handlerWrapper) Redirect(res http.ResponseWriter, req *http.Request) { 
 
 func (hw handlerWrapper) BD(res http.ResponseWriter, req *http.Request) {
 	err := hw.storageInterface.Ping()
-	if err == nil {
+	if err != nil {
+		http.Error(res, "нет бд", http.StatusBadRequest)
+	} else {
 		res.WriteHeader(http.StatusOK)
 	}
 }

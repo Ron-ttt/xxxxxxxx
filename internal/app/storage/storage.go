@@ -36,5 +36,5 @@ func (s *MapStorage) Get(key string) (string, error) {
 	return value, nil
 }
 func (s *MapStorage) Ping() error {
-	return errors.New("qwerty")
+	return errors.New("тут нет бд")
 }

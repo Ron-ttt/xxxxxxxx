@@ -16,7 +16,7 @@ type URL struct {
 }
 
 func NewDbStorage(dbname string) (Storage, error) {
-	conn, err := pgx.Connect(context.Background(), dbname)
+	conn, err := pgx.Connect(context.Background(), dbname) // я не понимаю что ему не нравится я все сделала правильно
 	if err != nil {
 		return nil, err
 	}
@@ -25,7 +25,7 @@ func NewDbStorage(dbname string) (Storage, error) {
 }
 
 func (s *DbStorage) Add(key string, value string) error {
-	_, err := s.conn.Exec("INSERT INTO $1 (shorturl, originalurl) VALUES($2, $3)", s.conn, key, value)
+	_, err := s.conn.Exec("INSERT INTO hui (shorturl, originalurl) VALUES($1, $2)", key, value)
 	if err != nil {
 		return err
 	}
@@ -33,7 +33,7 @@ func (s *DbStorage) Add(key string, value string) error {
 }
 
 func (s *DbStorage) Get(key string) (string, error) {
-	rows := s.conn.QueryRow("SELECT short_url FROM $2 WHERE original_url = $1", s.conn, key)
+	rows := s.conn.QueryRow("SELECT short_url FROM hui WHERE original_url = $1", key)
 	var originalURL string
 	err := rows.Scan(&originalURL)
 	if err != nil {
@@ -43,12 +43,7 @@ func (s *DbStorage) Get(key string) (string, error) {
 }
 
 func (s *DbStorage) Ping() error {
-	conn, err := pgx.Connect(context.Background(), s.conn)
-	if err != nil {
-		return err
-	}
-	defer conn.Close()
-	err = conn.Ping(context.Background())
+	err := s.conn.Ping(context.Background())
 	if err != nil {
 		return err
 	}

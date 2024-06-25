@@ -63,5 +63,5 @@ func (s *FileStorage) Get(key string) (string, error) {
 }
 
 func (s *FileStorage) Ping() error {
-	return errors.New("qwerty")
+	return errors.New("тут нет бд")
 }
