@@ -2,14 +2,12 @@ package storage
 
 import (
 	"context"
-	"database/sql"
-	"fmt"
-	"os"
 
 	"github.com/jackc/pgx"
 )
 
 type DbStorage struct {
+	conn *pgx.Conn
 }
 
 type URL struct {
@@ -18,39 +16,41 @@ type URL struct {
 }
 
 func NewDbStorage(dbname string) (Storage, error) {
-	conn, err := pgx.Connect(context.Background(), dbAdress)
+	conn, err := pgx.Connect(context.Background(), DbStorage.conn)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
-		os.Exit(1)
+		return nil, err
 	}
 	defer conn.Close()
-
-	return &DbStorage{}, nil
+	return &DbStorage{conn}, nil
 }
 
 func (s *DbStorage) Add(key string, value string) error {
-
+	_, err := s.conn.Exec("INSERT INTO $1 (shorturl, originalurl) VALUES($2, $3)", s.conn, key, value)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
 func (s *DbStorage) Get(key string) (string, error) {
-	db, err := sql.Open("pgx", "hui")
-	if err != nil {
-		panic(err)
-	}
-	defer db.Close()
-
-	rows, err := db.Query("SELECT shorturl FROM hui WHERE originalurl = $1", key)
+	rows := s.conn.QueryRow("SELECT short_url FROM $2 WHERE original_url = $1", s.conn, key)
+	var originalURL string
+	err := rows.Scan(&originalURL)
 	if err != nil {
 		return "", err
 	}
-	defer rows.Close()
+	return originalURL, nil
+}
 
-	var v URL
-	err = rows.Scan(&v.ShortURL)
+func (s *DbStorage) Ping() error {
+	conn, err := pgx.Connect(context.Background(), s.conn)
 	if err != nil {
-		return "", err
+		return err
 	}
-
-	return v.ShortURL, nil
+	defer conn.Close()
+	err = conn.Ping(context.Background())
+	if err != nil {
+		return err
+	}
+	return nil
 }

@@ -6,6 +6,7 @@ type Storage interface {
 	Add(key string, value string) error
 	//Remove(key string)
 	Get(key string) (string, error)
+	Ping() error
 }
 
 type MapStorage struct {
@@ -33,4 +34,7 @@ func (s *MapStorage) Get(key string) (string, error) {
 		return "", errors.New("key not found")
 	}
 	return value, nil
+}
+func (s *MapStorage) Ping() error {
+	return errors.New("qwerty")
 }

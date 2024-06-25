@@ -2,6 +2,7 @@ package storage
 
 import (
 	"encoding/json"
+	"errors"
 	"os"
 )
 
@@ -59,4 +60,8 @@ func (s *FileStorage) Add(key string, value string) error {
 
 func (s *FileStorage) Get(key string) (string, error) {
 	return s.memoryStorage.Get(key)
+}
+
+func (s *FileStorage) Ping() error {
+	return errors.New("qwerty")
 }
