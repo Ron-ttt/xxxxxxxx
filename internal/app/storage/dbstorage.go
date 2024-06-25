@@ -16,7 +16,7 @@ type URL struct {
 }
 
 func NewDbStorage(dbname string) (Storage, error) {
-	conn, err := pgx.Connect(context.Background(), DbStorage.conn)
+	conn, err := pgx.Connect(context.Background(), dbname)
 	if err != nil {
 		return nil, err
 	}
