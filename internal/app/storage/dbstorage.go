@@ -22,7 +22,7 @@ func NewDbStorage(dbname string) (Storage, error) {
 	}
 	//defer conn.Close(context.Background())
 
-	_, err1 := conn.Exec(context.Background(), "CREATE TABLE IF NOT EXISTS "+`hui("id" integer,"shorturl" text, "originalurl" text`)
+	_, err1 := conn.Exec(context.Background(), "CREATE TABLE IF NOT EXISTS "+`hui(id integer,shorturl text, originalurl text)`)
 	if err1 != nil {
 		return nil, err1
 	}
