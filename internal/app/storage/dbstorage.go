@@ -2,6 +2,7 @@ package storage
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/jackc/pgx/v5"
 )
@@ -16,14 +17,18 @@ type URL struct {
 }
 
 func NewDbStorage(dbname string) (Storage, error) {
+	fmt.Println("3")
 	conn, err := pgx.Connect(context.Background(), dbname)
 	if err != nil {
+		fmt.Println(err)
 		return nil, err
 	}
 	//defer conn.Close(context.Background())
 
-	_, err1 := conn.Exec(context.Background(), "CREATE TABLE IF NOT EXISTS "+`hui(id integer,shorturl text, originalurl text)`)
+	_, err1 := conn.Exec(context.Background(), "CREATE TABLE IF NOT EXISTS "+`hui(id integer PRIMARY KEY,shorturl text, originalurl text)`)
+	fmt.Println("2")
 	if err1 != nil {
+		fmt.Println(err1)
 		return nil, err1
 	}
 	return &DbStorage{conn}, nil
@@ -38,7 +43,7 @@ func (s *DbStorage) Add(key string, value string) error {
 }
 
 func (s *DbStorage) Get(key string) (string, error) {
-	rows := s.conn.QueryRow(context.Background(), "SELECT short_url FROM hui WHERE original_url = $1", key)
+	rows := s.conn.QueryRow(context.Background(), "SELECT originalurl FROM hui WHERE shorturl= $1", key)
 	var originalURL string
 	err := rows.Scan(&originalURL)
 	if err != nil {
