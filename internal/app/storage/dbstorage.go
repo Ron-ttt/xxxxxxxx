@@ -16,11 +16,16 @@ type URL struct {
 }
 
 func NewDbStorage(dbname string) (Storage, error) {
-	conn, err := pgx.Connect(context.Background(), dbname) // я не понимаю что ему не нравится я все сделала правильно
+	conn, err := pgx.Connect(context.Background(), dbname)
 	if err != nil {
 		return nil, err
 	}
 	//defer conn.Close(context.Background())
+
+	_, err1 := conn.Exec(context.Background(), "CREATE TABLE IF NOT EXISTS "+`hui("id" integer,"shorturl" text, "originalurl" text`)
+	if err1 != nil {
+		return nil, err1
+	}
 	return &DbStorage{conn}, nil
 }
 
