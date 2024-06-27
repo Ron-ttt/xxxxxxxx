@@ -2,16 +2,13 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"net/url"
 
+	"github.com/Ron-ttt/xxxxxxxx/internal/app/config"
 	"github.com/Ron-ttt/xxxxxxxx/internal/app/storage"
 	"github.com/Ron-ttt/xxxxxxxx/internal/app/utils"
-
-	"github.com/Ron-ttt/xxxxxxxx/internal/app/config"
 
 	"github.com/gorilla/mux"
 )
@@ -27,17 +24,22 @@ type URLRegistryResult struct {
 // var localhost = "http://" + Localhost + "/"
 
 func Init() handlerWrapper {
-	localhost, baseURL, storageType := config.Flags()
+	localhost, baseURL, storageType, dbAdress := config.Flags()
+	if dbAdress != "" {
+		dBStorage, err := storage.NewDBStorage(dbAdress)
+		if err == nil {
+			return handlerWrapper{storageInterface: dBStorage, Localhost: localhost, baseURL: baseURL + "/"}
+		}
+	}
 	if storageType != "" {
 		fileStorage, err := storage.NewFileStorage(storageType)
-		if err != nil {
-			log.Fatal("unable to create file storage")
+		if err == nil {
+			return handlerWrapper{storageInterface: fileStorage, Localhost: localhost, baseURL: baseURL + "/"}
 		}
-		return handlerWrapper{storageInterface: fileStorage, Localhost: localhost, baseURL: baseURL + "/"}
 	}
 	return handlerWrapper{storageInterface: storage.NewMapStorage(), Localhost: localhost, baseURL: baseURL + "/"}
-
 }
+
 func MInit() handlerWrapper {
 	return handlerWrapper{storageInterface: storage.NewMockStorage(), Localhost: "localhost:8080", baseURL: "http://localhost:8080/"}
 }
@@ -52,19 +54,26 @@ func (hw handlerWrapper) IndexPage(res http.ResponseWriter, req *http.Request) {
 	originalURL, err := io.ReadAll(req.Body)
 	if err != nil {
 		http.Error(res, "unable to read body", http.StatusBadRequest)
+		return
 	}
+
 	_, err1 := url.ParseRequestURI(string(originalURL))
 	if err1 != nil {
 		http.Error(res, "invalid url", http.StatusBadRequest)
+		return
 	}
-	fmt.Print(originalURL)
-	res.Header().Set("content-type", "text/plain")
-	res.WriteHeader(http.StatusCreated)
 
 	length := 6 // Укажите длину строки
 	randomString := utils.RandString(length)
 	rez := hw.baseURL + randomString
-	hw.storageInterface.Add(randomString, string(originalURL))
+	err = hw.storageInterface.Add(randomString, string(originalURL))
+	if err != nil {
+		http.Error(res, "ошибка эдд", http.StatusBadRequest)
+		return
+	}
+
+	res.Header().Set("content-type", "text/plain")
+	res.WriteHeader(http.StatusCreated)
 	res.Write([]byte(rez))
 
 }
@@ -79,6 +88,7 @@ func (hw handlerWrapper) IndexPageJ(res http.ResponseWriter, req *http.Request) 
 	_, err1 := url.ParseRequestURI(longURL.URL)
 	if err1 != nil {
 		http.Error(res, "invalid url", http.StatusBadRequest)
+		return
 	}
 
 	res.Header().Set("content-type", "application/json")
@@ -109,4 +119,13 @@ func (hw handlerWrapper) Redirect(res http.ResponseWriter, req *http.Request) { 
 	res.Header().Set("Location", originalURL)
 	res.WriteHeader(http.StatusTemporaryRedirect)
 
+}
+
+func (hw handlerWrapper) BD(res http.ResponseWriter, req *http.Request) {
+	err := hw.storageInterface.Ping()
+	if err != nil {
+		http.Error(res, "нет бд", http.StatusBadRequest)
+	} else {
+		res.WriteHeader(http.StatusOK)
+	}
 }
