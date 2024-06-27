@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
 	"net/url"
@@ -57,19 +56,24 @@ func (hw handlerWrapper) IndexPage(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, "unable to read body", http.StatusBadRequest)
 		return
 	}
+
 	_, err1 := url.ParseRequestURI(string(originalURL))
 	if err1 != nil {
 		http.Error(res, "invalid url", http.StatusBadRequest)
 		return
 	}
-	fmt.Print(originalURL)
-	res.Header().Set("content-type", "text/plain")
-	res.WriteHeader(http.StatusCreated)
 
 	length := 6 // Укажите длину строки
 	randomString := utils.RandString(length)
 	rez := hw.baseURL + randomString
-	hw.storageInterface.Add(randomString, string(originalURL))
+	err = hw.storageInterface.Add(randomString, string(originalURL))
+	if err != nil {
+		http.Error(res, "ошибка эдд", http.StatusBadRequest)
+		return
+	}
+
+	res.Header().Set("content-type", "text/plain")
+	res.WriteHeader(http.StatusCreated)
 	res.Write([]byte(rez))
 
 }

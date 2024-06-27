@@ -25,7 +25,7 @@ func NewDBStorage(dbname string) (Storage, error) {
 	}
 	//defer conn.Close(context.Background())
 
-	_, err1 := conn.Exec(context.Background(), "CREATE TABLE IF NOT EXISTS hui(id integer PRIMARY KEY,shorturl text, originalurl text)")
+	_, err1 := conn.Exec(context.Background(), "CREATE TABLE IF NOT EXISTS hui(id SERIAL PRIMARY KEY,shorturl text, originalurl text)")
 	fmt.Println("2")
 	if err1 != nil {
 		fmt.Println(err1)
@@ -37,6 +37,7 @@ func NewDBStorage(dbname string) (Storage, error) {
 func (s *DBStorage) Add(key string, value string) error {
 	_, err := s.conn.Exec(context.Background(), "INSERT INTO hui (shorturl, originalurl) VALUES($1, $2)", key, value)
 	if err != nil {
+		fmt.Println(err)
 		return err
 	}
 	return nil
