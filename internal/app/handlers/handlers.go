@@ -27,9 +27,9 @@ type URLRegistryResult struct {
 func Init() handlerWrapper {
 	localhost, baseURL, storageType, dbAdress := config.Flags()
 	if dbAdress != "" {
-		DbStorage, err := storage.NewDbStorage(dbAdress)
+		dBStorage, err := storage.NewDBStorage(dbAdress)
 		if err == nil {
-			return handlerWrapper{storageInterface: DbStorage, Localhost: localhost, baseURL: baseURL + "/"}
+			return handlerWrapper{storageInterface: dBStorage, Localhost: localhost, baseURL: baseURL + "/"}
 		}
 	}
 	if storageType != "" {
@@ -55,10 +55,12 @@ func (hw handlerWrapper) IndexPage(res http.ResponseWriter, req *http.Request) {
 	originalURL, err := io.ReadAll(req.Body)
 	if err != nil {
 		http.Error(res, "unable to read body", http.StatusBadRequest)
+		return
 	}
 	_, err1 := url.ParseRequestURI(string(originalURL))
 	if err1 != nil {
 		http.Error(res, "invalid url", http.StatusBadRequest)
+		return
 	}
 	fmt.Print(originalURL)
 	res.Header().Set("content-type", "text/plain")
@@ -82,6 +84,7 @@ func (hw handlerWrapper) IndexPageJ(res http.ResponseWriter, req *http.Request) 
 	_, err1 := url.ParseRequestURI(longURL.URL)
 	if err1 != nil {
 		http.Error(res, "invalid url", http.StatusBadRequest)
+		return
 	}
 
 	res.Header().Set("content-type", "application/json")
