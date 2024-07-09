@@ -69,7 +69,7 @@ func (s *FileStorage) Ping() error {
 func (s *FileStorage) AddM(mas []URLRegistryM, short []string) error {
 	l := len(mas)
 	for i := 0; i < l; i++ {
-		s.Add(mas[i].OriginalUrl, short[i])
+		s.Add(mas[i].OriginalURL, short[i])
 	}
 	return nil
 }

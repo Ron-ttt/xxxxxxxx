@@ -81,7 +81,7 @@ func (hw handlerWrapper) IndexPageM(res http.ResponseWriter, req *http.Request) 
 	}
 	l := len(body)
 	for i := 0; i < l; i++ {
-		_, err1 := url.ParseRequestURI(body[i].OriginalUrl)
+		_, err1 := url.ParseRequestURI(body[i].OriginalURL)
 		if err1 != nil {
 			http.Error(res, "invalid url", http.StatusBadRequest)
 			return
@@ -95,8 +95,8 @@ func (hw handlerWrapper) IndexPageM(res http.ResponseWriter, req *http.Request) 
 	for i := 0; i < l; i++ {
 		randomString := utils.RandString(length)
 		listshort = append(listshort, randomString)
-		rez[i].Id = body[i].Id
-		rez[i].ShortUrl = hw.baseURL + randomString
+		rez[i].ID = body[i].ID
+		rez[i].ShortURL = hw.baseURL + randomString
 	}
 	hw.storageInterface.AddM(body, listshort)
 
