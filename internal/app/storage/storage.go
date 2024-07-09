@@ -7,6 +7,15 @@ type Storage interface {
 	//Remove(key string)
 	Get(key string) (string, error)
 	Ping() error
+	AddM(mas []URLRegistryM, short []string) error
+}
+type URLRegistryM struct {
+	Id          string `json:"correlation_id"`
+	OriginalUrl string `json:"original_url"`
+}
+type URLRegistryMRes struct {
+	Id       string `json:"correlation_id"`
+	ShortUrl string `json:"short_url"`
 }
 
 type MapStorage struct {
@@ -37,4 +46,12 @@ func (s *MapStorage) Get(key string) (string, error) {
 }
 func (s *MapStorage) Ping() error {
 	return errors.New("тут нет бд")
+}
+
+func (s *MapStorage) AddM(mas []URLRegistryM, short []string) error {
+	l := len(mas)
+	for i := 0; i < l; i++ {
+		s.Add(mas[i].OriginalUrl, short[i])
+	}
+	return nil
 }

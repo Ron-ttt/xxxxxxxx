@@ -17,6 +17,7 @@ func main() {
 	r.HandleFunc("/", hw.IndexPage).Methods(http.MethodPost)
 	r.HandleFunc("/{id}", hw.Redirect).Methods(http.MethodGet)
 	r.HandleFunc("/api/shorten", hw.IndexPageJ).Methods(http.MethodPost)
+	r.HandleFunc("/api/shorten/batch", hw.IndexPageM).Methods(http.MethodPost)
 
 	log.Println("server is running")
 	err := http.ListenAndServe(hw.Localhost, r)

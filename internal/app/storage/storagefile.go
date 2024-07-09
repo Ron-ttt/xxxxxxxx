@@ -65,3 +65,11 @@ func (s *FileStorage) Get(key string) (string, error) {
 func (s *FileStorage) Ping() error {
 	return errors.New("тут нет бд")
 }
+
+func (s *FileStorage) AddM(mas []URLRegistryM, short []string) error {
+	l := len(mas)
+	for i := 0; i < l; i++ {
+		s.Add(mas[i].OriginalUrl, short[i])
+	}
+	return nil
+}

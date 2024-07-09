@@ -22,3 +22,6 @@ func (s *MStorage) Get(key string) (string, error) {
 func (s *MStorage) Ping() error {
 	return errors.New("qwerty")
 }
+func (s *MStorage) AddM(mas []URLRegistryM, short []string) error {
+	return nil
+}
