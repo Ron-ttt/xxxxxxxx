@@ -101,12 +101,12 @@ func (hw handlerWrapper) IndexPageM(res http.ResponseWriter, req *http.Request) 
 		http.Error(res, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	res.Header().Set("content-type", "application/json")
+	res.WriteHeader(http.StatusCreated)
 	if err := json.NewEncoder(res).Encode(rez); err != nil {
 		http.Error(res, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	res.Header().Set("content-type", "application/json")
-	res.WriteHeader(http.StatusCreated)
 }
 
 func (hw handlerWrapper) IndexPageJ(res http.ResponseWriter, req *http.Request) { // post
