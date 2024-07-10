@@ -87,23 +87,26 @@ func (hw handlerWrapper) IndexPageM(res http.ResponseWriter, req *http.Request) 
 			return
 		}
 	}
-	res.Header().Set("content-type", "application/json")
-	res.WriteHeader(http.StatusCreated)
+
 	var listshort []string
 	var rez []storage.URLRegistryMRes
 	length := 6 // Укажите длину строки
-	for i := 0; i < l; i++ {
+	for _, v := range body {
 		randomString := utils.RandString(length)
 		listshort = append(listshort, randomString)
-		rez[i].ID = body[i].ID
-		rez[i].ShortURL = hw.baseURL + randomString
+		rez = append(rez, storage.URLRegistryMRes{ID: v.ID, ShortURL: hw.baseURL + randomString})
 	}
-	hw.storageInterface.AddM(body, listshort)
-
+	err := hw.storageInterface.AddM(body, listshort)
+	if err != nil {
+		http.Error(res, err.Error(), http.StatusInternalServerError)
+		return
+	}
 	if err := json.NewEncoder(res).Encode(rez); err != nil {
 		http.Error(res, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	res.Header().Set("content-type", "application/json")
+	res.WriteHeader(http.StatusCreated)
 }
 
 func (hw handlerWrapper) IndexPageJ(res http.ResponseWriter, req *http.Request) { // post

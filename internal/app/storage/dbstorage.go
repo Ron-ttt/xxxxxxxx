@@ -68,13 +68,16 @@ func (s *DBStorage) AddM(m []URLRegistryM, short []string) error {
 	}
 	l := len(m)
 	for i := 0; i < l; i++ {
-		_, err := tx.Exec(context.Background(), "INSERT INTO hui (shorturl, originalurl)"+" VALUES(?,?)", short[i], m[i].OriginalURL)
+		_, err := tx.Exec(context.Background(), "INSERT INTO hui (shorturl, originalurl)"+" VALUES($1,$2)", short[i], m[i].OriginalURL)
 		if err != nil {
 			// если ошибка, то откатываем изменения
 			tx.Rollback(context.Background())
 			return err
 		}
 	}
-	tx.Commit(context.Background())
+	err = tx.Commit(context.Background())
+	if err != nil {
+		return err
+	}
 	return nil
 }
