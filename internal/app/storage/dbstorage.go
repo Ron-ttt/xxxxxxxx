@@ -25,7 +25,7 @@ func NewDBStorage(dbname string) (Storage, error) {
 	}
 	//defer conn.Close(context.Background())
 
-	_, err1 := conn.Exec(context.Background(), "CREATE TABLE IF NOT EXISTS hui(id SERIAL PRIMARY KEY,shorturl text, originalurl text)")
+	_, err1 := conn.Exec(context.Background(), "CREATE TABLE IF NOT EXISTS hui(id SERIAL PRIMARY KEY,shorturl text, originalurl text UNIQUE)")
 	fmt.Println("2")
 	if err1 != nil {
 		fmt.Println(err1)
@@ -80,4 +80,13 @@ func (s *DBStorage) AddM(m []URLRegistryM, short []string) error {
 		return err
 	}
 	return nil
+}
+func (s *DBStorage) Find(oru string) (string, error) {
+	rows := s.conn.QueryRow(context.Background(), "SELECT shorturl FROM hui WHERE originalurl= $1", oru)
+	var short string
+	err := rows.Scan(&short)
+	if err != nil {
+		return "", err
+	}
+	return short, nil
 }

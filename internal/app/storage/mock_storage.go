@@ -25,3 +25,7 @@ func (s *MStorage) Ping() error {
 func (s *MStorage) AddM(mas []URLRegistryM, short []string) error {
 	return nil
 }
+
+func (s *MStorage) Find(oru string) (string, error) {
+	return "", nil
+}

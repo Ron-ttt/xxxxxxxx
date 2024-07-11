@@ -73,3 +73,7 @@ func (s *FileStorage) AddM(mas []URLRegistryM, short []string) error {
 	}
 	return nil
 }
+
+func (s *FileStorage) Find(oru string) (string, error) {
+	return "", nil
+}
