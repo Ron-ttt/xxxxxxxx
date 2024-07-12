@@ -5,7 +5,6 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"slices"
 
 	"github.com/Ron-ttt/xxxxxxxx/internal/app/config"
 	"github.com/Ron-ttt/xxxxxxxx/internal/app/storage"
@@ -61,11 +60,11 @@ func (hw handlerWrapper) IndexPage(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, "invalid url", http.StatusBadRequest)
 		return
 	}
-	rez1, _ := hw.storageInterface.Find(string(originalURL))
-	if rez1 != "" {
+	oldshort, err := hw.storageInterface.Find(string(originalURL))
+	if err == nil {
 		res.Header().Set("content-type", "text/plain")
 		res.WriteHeader(http.StatusConflict)
-		res.Write([]byte(hw.baseURL + rez1))
+		res.Write([]byte(hw.baseURL + oldshort))
 		return
 	}
 	length := 6 // Укажите длину строки
@@ -95,24 +94,19 @@ func (hw handlerWrapper) IndexPageM(res http.ResponseWriter, req *http.Request) 
 			return
 		}
 	}
-	var rez2 []storage.URLRegistryMRes
-	var num []int
-	for i := 0; i < l; i++ {
-		rez1, _ := hw.storageInterface.Find(string(body[i].OriginalURL))
-		if rez1 != "" {
-			rez2 = append(rez2, storage.URLRegistryMRes{ID: body[i].ID, ShortURL: hw.baseURL + rez1})
-			num = append(num, i)
-		}
-	}
-	var body2 []storage.URLRegistryM
-	for i, v := range body {
-		if !slices.Contains(num, i) {
-			body2 = append(body2, v)
-		}
-	}
+	length := 6 // Укажите длину строки
 	var listshort []string
 	var rez []storage.URLRegistryMRes
-	length := 6 // Укажите длину строки
+	var rez2 []storage.URLRegistryMRes
+	var body2 []storage.URLRegistryM
+	for i := 0; i < l; i++ {
+		oldshort, err := hw.storageInterface.Find(string(body[i].OriginalURL))
+		if err == nil {
+			rez2 = append(rez2, storage.URLRegistryMRes{ID: body[i].ID, ShortURL: hw.baseURL + oldshort})
+		} else {
+			body2 = append(body2, storage.URLRegistryM{ID: body[i].ID, OriginalURL: body[i].OriginalURL})
+		}
+	}
 	for _, v := range body2 {
 		randomString := utils.RandString(length)
 		listshort = append(listshort, randomString)
@@ -143,23 +137,22 @@ func (hw handlerWrapper) IndexPageJ(res http.ResponseWriter, req *http.Request) 
 		http.Error(res, "invalid url", http.StatusBadRequest)
 		return
 	}
-	rez1, _ := hw.storageInterface.Find(string(longURL.URL))
-	if rez1 != "" {
+	var rez URLRegistryResult
+	oldshort, err := hw.storageInterface.Find(string(longURL.URL))
+	if err == nil {
 		res.Header().Set("content-type", "application/json")
 		res.WriteHeader(http.StatusConflict)
-		res.Write([]byte(hw.baseURL + rez1))
-		var rez URLRegistryResult
-		rez.Result = hw.baseURL + rez1
+		rez.Result = hw.baseURL + oldshort
 		if err := json.NewEncoder(res).Encode(rez); err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
+		return
 	}
 	res.Header().Set("content-type", "application/json")
 	res.WriteHeader(http.StatusCreated)
 	length := 6 // Укажите длину строки
 	randomString := utils.RandString(length)
-	var rez URLRegistryResult
 	rez.Result = hw.baseURL + randomString
 	hw.storageInterface.Add(randomString, string(longURL.URL))
 	if err := json.NewEncoder(res).Encode(rez); err != nil {
