@@ -19,3 +19,13 @@ func (s *MStorage) Get(key string) (string, error) {
 	return "http://love_nika", nil /// как понимать длинная или нет я не ебу
 
 }
+func (s *MStorage) Ping() error {
+	return errors.New("qwerty")
+}
+func (s *MStorage) AddM(mas []URLRegistryM, short []string) error {
+	return nil
+}
+
+func (s *MStorage) Find(oru string) (string, error) {
+	return "", errors.New("")
+}

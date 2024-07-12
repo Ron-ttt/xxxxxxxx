@@ -2,6 +2,7 @@ package storage
 
 import (
 	"encoding/json"
+	"errors"
 	"os"
 )
 
@@ -22,6 +23,7 @@ func NewFileStorage(filename string) (Storage, error) {
 		return nil, err
 	}
 	defer f.Close()
+
 	decoder := json.NewDecoder(f)
 	memoryStorage := NewMapStorage()
 	for decoder.More() {
@@ -29,6 +31,7 @@ func NewFileStorage(filename string) (Storage, error) {
 		decoder.Decode(&data)
 		memoryStorage.Add(data.ShortURL, data.OriginalURL)
 	}
+
 	return &FileStorage{
 		file:          f,
 		memoryStorage: memoryStorage,
@@ -46,6 +49,8 @@ func (s *FileStorage) Add(key string, value string) error {
 	if err != nil {
 		return err
 	}
+	defer f.Close()
+
 	_, err = f.Write(append(jsonData, '\n'))
 	if err != nil {
 		return err
@@ -55,4 +60,20 @@ func (s *FileStorage) Add(key string, value string) error {
 
 func (s *FileStorage) Get(key string) (string, error) {
 	return s.memoryStorage.Get(key)
+}
+
+func (s *FileStorage) Ping() error {
+	return errors.New("тут нет бд")
+}
+
+func (s *FileStorage) AddM(mas []URLRegistryM, short []string) error {
+	l := len(mas)
+	for i := 0; i < l; i++ {
+		s.Add(mas[i].OriginalURL, short[i])
+	}
+	return nil
+}
+
+func (s *FileStorage) Find(oru string) (string, error) {
+	return "", errors.New("")
 }
