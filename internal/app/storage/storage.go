@@ -58,5 +58,5 @@ func (s *MapStorage) AddM(mas []URLRegistryM, short []string) error {
 }
 
 func (s *MapStorage) Find(oru string) (string, error) {
-	return "", nil
+	return "", errors.New("")
 }
