@@ -2,6 +2,8 @@ package middleware
 
 import (
 	"compress/gzip"
+	"context"
+	"errors"
 	"io"
 	"net/http"
 	"strings"
@@ -80,5 +82,25 @@ func GzipMiddleware(h http.Handler) http.Handler {
 
 		w.Header().Set("Content-Encoding", "gzip")
 		h.ServeHTTP(gzipWriter{ResponseWriter: w, Writer: gz}, r)
+	})
+}
+
+func AufMiddleware(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		cookie, err := r.Cookie("ex")
+		if err != nil {
+			if errors.Is(err, http.ErrNoCookie) {
+				cookie := http.Cookie{
+					Name: "ex",
+				}
+				http.SetCookie(w, &cookie)
+			} else {
+				http.Error(w, err.Error(), http.StatusBadRequest)
+			}
+		}
+		type ContextKey string
+		var key ContextKey = "Name"
+		ctx := context.WithValue(r.Context(), key, cookie.Name)
+		h.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

@@ -9,6 +9,11 @@ type Storage interface {
 	Ping() error
 	AddM(mas []URLRegistryM, short []string) error
 	Find(oru string) (string, error)
+	GetU(Name string) (mas []UserURL)
+}
+type UserURL struct {
+	ShortURL    string
+	OriginalURL string
 }
 type URLRegistryM struct {
 	ID          string `json:"correlation_id"`
@@ -59,4 +64,8 @@ func (s *MapStorage) AddM(mas []URLRegistryM, short []string) error {
 
 func (s *MapStorage) Find(oru string) (string, error) {
 	return "", errors.New("")
+}
+
+func (s *MapStorage) GetU(name string) []UserURL {
+	return nil
 }

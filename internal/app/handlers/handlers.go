@@ -181,3 +181,13 @@ func (hw handlerWrapper) BD(res http.ResponseWriter, req *http.Request) {
 		res.WriteHeader(http.StatusOK)
 	}
 }
+
+func (hw handlerWrapper) User(res http.ResponseWriter, req *http.Request) {
+	var body []storage.UserURL
+	Name := req.Context().Value("Name").(string)
+	body = hw.storageInterface.GetU(Name)
+	if err := json.NewEncoder(res).Encode(body); err != nil {
+		http.Error(res, err.Error(), http.StatusInternalServerError)
+		return
+	}
+}

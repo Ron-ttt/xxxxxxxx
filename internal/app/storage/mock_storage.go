@@ -29,3 +29,7 @@ func (s *MStorage) AddM(mas []URLRegistryM, short []string) error {
 func (s *MStorage) Find(oru string) (string, error) {
 	return "", errors.New("")
 }
+
+func (s *MStorage) GetU(name string) []UserURL {
+	return nil
+}

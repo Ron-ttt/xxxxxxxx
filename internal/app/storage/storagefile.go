@@ -77,3 +77,7 @@ func (s *FileStorage) AddM(mas []URLRegistryM, short []string) error {
 func (s *FileStorage) Find(oru string) (string, error) {
 	return "", errors.New("")
 }
+
+func (s *FileStorage) GetU(name string) []UserURL {
+	return nil
+}

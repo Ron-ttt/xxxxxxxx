@@ -90,3 +90,7 @@ func (s *DBStorage) Find(oru string) (string, error) {
 	}
 	return short, nil
 }
+
+func (s *DBStorage) GetU(name string) []UserURL {
+	return nil
+}
