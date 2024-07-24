@@ -30,6 +30,6 @@ func (s *MStorage) Find(oru string) (string, error) {
 	return "", errors.New("")
 }
 
-func (s *MStorage) ListUserURLs(name string) []UserURL {
-	return nil
+func (s *MStorage) ListUserURLs(name string) ([]UserURL, error) {
+	return nil, nil
 }

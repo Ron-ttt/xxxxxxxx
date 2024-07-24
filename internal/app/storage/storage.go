@@ -9,7 +9,7 @@ type Storage interface {
 	Ping() error
 	AddM(mas []URLRegistryM, short []string, name string) error
 	Find(oru string) (string, error)
-	ListUserURLs(Name string) (mas []UserURL)
+	ListUserURLs(Name string) ([]UserURL, error)
 }
 type UserURL struct {
 	ShortURL    string
@@ -71,12 +71,12 @@ func (s *MapStorage) Find(oru string) (string, error) {
 	return "", errors.New("")
 }
 
-func (s *MapStorage) ListUserURLs(name string) []UserURL {
+func (s *MapStorage) ListUserURLs(name string) ([]UserURL, error) {
 	var rez []UserURL
 	for k, z := range s.m {
 		if z.User == name {
 			rez = append(rez, UserURL{OriginalURL: z.Original, ShortURL: k})
 		}
 	}
-	return rez
+	return rez, nil
 }

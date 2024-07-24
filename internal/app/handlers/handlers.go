@@ -189,9 +189,22 @@ func (hw handlerWrapper) BD(res http.ResponseWriter, req *http.Request) {
 func (hw handlerWrapper) ListUserURLs(res http.ResponseWriter, req *http.Request) {
 	var body []storage.UserURL
 	name := req.Context().Value(middleware.ContextKey("Name")).(string)
-	body = hw.storageInterface.ListUserURLs(name)
+	if len(name) < 1 {
+		res.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+	body, err := hw.storageInterface.ListUserURLs(name)
+	if err != nil {
+		http.Error(res, "", http.StatusBadRequest)
+		return
+	}
+	if len(body) < 1 {
+		res.WriteHeader(http.StatusNoContent)
+		return
+	}
 	if err := json.NewEncoder(res).Encode(body); err != nil {
 		http.Error(res, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	res.WriteHeader(http.StatusTemporaryRedirect)
 }
