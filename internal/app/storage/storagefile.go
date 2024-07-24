@@ -80,14 +80,5 @@ func (s *FileStorage) Find(oru string) (string, error) {
 }
 
 func (s *FileStorage) ListUserURLs(name string) []UserURL {
-	// var rez []UserURL
-	// return s.memoryStorage.Get(key)
-
-	// for k, z := range s.memoryStorage. {
-	// 	if z.User == name {
-	// 		rez = append(rez, UserURL{OriginalURL: z.Original, ShortURL: k})
-	// 	}
-	// }
-	// return rez
-	return nil
+	return s.memoryStorage.ListUserURLs(name)
 }
