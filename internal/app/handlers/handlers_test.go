@@ -7,6 +7,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Ron-ttt/xxxxxxxx/internal/app/middleware"
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -42,11 +43,10 @@ func Test_handlerWrapper_IndexPage(t *testing.T) { // работает удив�
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			hw := MInit()
-
 			r := mux.NewRouter()
+			r.Use(middleware.Logger1, middleware.GzipMiddleware, middleware.AuthMiddleware)
 			r.HandleFunc("/", hw.IndexPage)
 			w2 := strings.NewReader(test.want.request)
-
 			request := httptest.NewRequest(http.MethodPost, hw.baseURL, w2)
 			// создаём новый Recorder
 			w := httptest.NewRecorder()
@@ -105,6 +105,8 @@ func Test_handlerWrapper_Redirect(t *testing.T) {
 			// Создаем тестовый запрос
 
 			r := mux.NewRouter()
+			r.Use(middleware.Logger1, middleware.GzipMiddleware, middleware.AuthMiddleware)
+
 			r.HandleFunc("/{id}", handler.Redirect)
 			// Выполняем запрос
 			w2 := httptest.NewRecorder()
