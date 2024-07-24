@@ -97,10 +97,10 @@ type ContextKey string
 // *    5. create secret key
 func AuthMiddleware(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		secretKey := []byte("mandarin")
+		secretKey := []byte("mandarinmandarin")
 		length := 5
 		username := utils.RandString(length)
-		namecookie := "ex"
+		namecookie := "username"
 		value, err := cookies.ReadEncrypted(r, namecookie, secretKey)
 		if err != nil {
 			if errors.Is(err, http.ErrNoCookie) {
@@ -110,10 +110,12 @@ func AuthMiddleware(h http.Handler) http.Handler {
 				}
 				err1 := cookies.WriteEncrypted(w, cookie, secretKey)
 				if err1 != nil {
-					http.Error(w, err.Error(), http.StatusBadRequest)
+					http.Error(w, err1.Error(), http.StatusBadRequest)
+					return
 				}
 			} else {
 				http.Error(w, err.Error(), http.StatusBadRequest)
+				return
 			}
 		}
 		var key ContextKey = "Name"
