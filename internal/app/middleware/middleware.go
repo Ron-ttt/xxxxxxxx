@@ -9,6 +9,8 @@ import (
 	"strings"
 	"time"
 
+	cookies "github.com/Ron-ttt/xxxxxxxx/internal/app/cookie"
+	"github.com/Ron-ttt/xxxxxxxx/internal/app/utils"
 	"go.uber.org/zap"
 )
 
@@ -85,22 +87,37 @@ func GzipMiddleware(h http.Handler) http.Handler {
 	})
 }
 
-func AufMiddleware(h http.Handler) http.Handler {
+type ContextKey string
+
+// *    1. generate random names for users
+// *    2. use read/writeEncrypted funcs
+// TODO 3. list users func implementation
+// TODO 4. no cry!!!
+// ! JUST CRYYYYYYYYY
+// *    5. create secret key
+func AuthMiddleware(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		cookie, err := r.Cookie("ex")
+		secretKey := []byte("mandarin")
+		length := 5
+		username := utils.RandString(length)
+		namecookie := "ex"
+		value, err := cookies.ReadEncrypted(r, namecookie, secretKey)
 		if err != nil {
 			if errors.Is(err, http.ErrNoCookie) {
 				cookie := http.Cookie{
-					Name: "ex",
+					Name:  namecookie,
+					Value: username,
 				}
-				http.SetCookie(w, &cookie)
+				err1 := cookies.WriteEncrypted(w, cookie, secretKey)
+				if err1 != nil {
+					http.Error(w, err.Error(), http.StatusBadRequest)
+				}
 			} else {
 				http.Error(w, err.Error(), http.StatusBadRequest)
 			}
 		}
-		type ContextKey string
 		var key ContextKey = "Name"
-		ctx := context.WithValue(r.Context(), key, cookie.Name)
+		ctx := context.WithValue(r.Context(), key, value)
 		h.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

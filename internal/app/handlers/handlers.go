@@ -7,6 +7,7 @@ import (
 	"net/url"
 
 	"github.com/Ron-ttt/xxxxxxxx/internal/app/config"
+	"github.com/Ron-ttt/xxxxxxxx/internal/app/middleware"
 	"github.com/Ron-ttt/xxxxxxxx/internal/app/storage"
 	"github.com/Ron-ttt/xxxxxxxx/internal/app/utils"
 
@@ -70,7 +71,8 @@ func (hw handlerWrapper) IndexPage(res http.ResponseWriter, req *http.Request) {
 	length := 6 // Укажите длину строки
 	randomString := utils.RandString(length)
 	rez := hw.baseURL + randomString
-	err = hw.storageInterface.Add(randomString, string(originalURL))
+	name := req.Context().Value(middleware.ContextKey("Name")).(string)
+	err = hw.storageInterface.Add(randomString, string(originalURL), name)
 	if err != nil {
 		http.Error(res, "ошибка эдд", http.StatusBadRequest)
 		return
@@ -113,7 +115,8 @@ func (hw handlerWrapper) IndexPageM(res http.ResponseWriter, req *http.Request) 
 		rez = append(rez, storage.URLRegistryMRes{ID: v.ID, ShortURL: hw.baseURL + randomString})
 	}
 	rez = append(rez, rez2...)
-	err := hw.storageInterface.AddM(body2, listshort)
+	name := req.Context().Value(middleware.ContextKey("Name")).(string)
+	err := hw.storageInterface.AddM(body2, listshort, name)
 	if err != nil {
 		http.Error(res, err.Error(), http.StatusInternalServerError)
 		return
@@ -154,7 +157,8 @@ func (hw handlerWrapper) IndexPageJ(res http.ResponseWriter, req *http.Request) 
 	length := 6 // Укажите длину строки
 	randomString := utils.RandString(length)
 	rez.Result = hw.baseURL + randomString
-	hw.storageInterface.Add(randomString, string(longURL.URL))
+	name := req.Context().Value(middleware.ContextKey("Name")).(string)
+	hw.storageInterface.Add(randomString, string(longURL.URL), name)
 	if err := json.NewEncoder(res).Encode(rez); err != nil {
 		http.Error(res, err.Error(), http.StatusInternalServerError)
 		return
@@ -182,10 +186,10 @@ func (hw handlerWrapper) BD(res http.ResponseWriter, req *http.Request) {
 	}
 }
 
-func (hw handlerWrapper) User(res http.ResponseWriter, req *http.Request) {
+func (hw handlerWrapper) ListUserURLs(res http.ResponseWriter, req *http.Request) {
 	var body []storage.UserURL
-	Name := req.Context().Value("Name").(string)
-	body = hw.storageInterface.GetU(Name)
+	name := req.Context().Value(middleware.ContextKey("Name")).(string)
+	body = hw.storageInterface.ListUserURLs(name)
 	if err := json.NewEncoder(res).Encode(body); err != nil {
 		http.Error(res, err.Error(), http.StatusInternalServerError)
 		return

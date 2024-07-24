@@ -25,17 +25,18 @@ func NewDBStorage(dbname string) (Storage, error) {
 	}
 	//defer conn.Close(context.Background())
 
-	_, err1 := conn.Exec(context.Background(), "CREATE TABLE IF NOT EXISTS hui(id SERIAL PRIMARY KEY,shorturl text, originalurl text UNIQUE)")
-	fmt.Println("2")
+	_, err1 := conn.Exec(context.Background(), "CREATE TABLE IF NOT EXISTS hui(id SERIAL PRIMARY KEY, users text, shorturl text, originalurl text UNIQUE)")
+
 	if err1 != nil {
 		fmt.Println(err1)
 		return nil, err1
 	}
+	fmt.Println("2")
 	return &DBStorage{conn}, nil
 }
 
-func (s *DBStorage) Add(key string, value string) error {
-	_, err := s.conn.Exec(context.Background(), "INSERT INTO hui (shorturl, originalurl) VALUES($1, $2)", key, value)
+func (s *DBStorage) Add(key string, value string, name string) error {
+	_, err := s.conn.Exec(context.Background(), "INSERT INTO hui (shorturl, originalurl, users) VALUES($1, $2, $3)", key, value, name)
 	if err != nil {
 		fmt.Println(err)
 		return err
@@ -61,14 +62,14 @@ func (s *DBStorage) Ping() error {
 	return nil
 }
 
-func (s *DBStorage) AddM(m []URLRegistryM, short []string) error {
+func (s *DBStorage) AddM(m []URLRegistryM, short []string, name string) error {
 	tx, err := s.conn.Begin(context.Background())
 	if err != nil {
 		return err
 	}
 	l := len(m)
 	for i := 0; i < l; i++ {
-		_, err := tx.Exec(context.Background(), "INSERT INTO hui (shorturl, originalurl)"+" VALUES($1,$2)", short[i], m[i].OriginalURL)
+		_, err := tx.Exec(context.Background(), "INSERT INTO hui (shorturl, originalurl, users)"+" VALUES($1,$2,$3)", short[i], m[i].OriginalURL, name)
 		if err != nil {
 			// если ошибка, то откатываем изменения
 			tx.Rollback(context.Background())
@@ -91,6 +92,13 @@ func (s *DBStorage) Find(oru string) (string, error) {
 	return short, nil
 }
 
-func (s *DBStorage) GetU(name string) []UserURL {
-	return nil
+func (s *DBStorage) ListUserURLs(name string) []UserURL {
+	var rez []UserURL
+
+	rows := s.conn.QueryRow(context.Background(), "SELECT originalurl, shorturl FROM hui WHERE users= $1", name)
+	err := rows.Scan(&rez)
+	if err != nil {
+		return nil
+	}
+	return rez
 }

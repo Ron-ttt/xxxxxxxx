@@ -8,7 +8,7 @@ func NewMockStorage() Storage {
 	return &MStorage{} // да пошел ты нахуй пидорас ебучий
 }
 
-func (s *MStorage) Add(key string, value string) error {
+func (s *MStorage) Add(key string, value string, name string) error {
 	return nil
 }
 
@@ -22,7 +22,7 @@ func (s *MStorage) Get(key string) (string, error) {
 func (s *MStorage) Ping() error {
 	return errors.New("qwerty")
 }
-func (s *MStorage) AddM(mas []URLRegistryM, short []string) error {
+func (s *MStorage) AddM(mas []URLRegistryM, short []string, name string) error {
 	return nil
 }
 
@@ -30,6 +30,6 @@ func (s *MStorage) Find(oru string) (string, error) {
 	return "", errors.New("")
 }
 
-func (s *MStorage) GetU(name string) []UserURL {
+func (s *MStorage) ListUserURLs(name string) []UserURL {
 	return nil
 }
