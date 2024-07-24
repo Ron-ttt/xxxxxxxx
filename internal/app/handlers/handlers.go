@@ -188,6 +188,7 @@ func (hw handlerWrapper) BD(res http.ResponseWriter, req *http.Request) {
 
 func (hw handlerWrapper) ListUserURLs(res http.ResponseWriter, req *http.Request) {
 	var body []storage.UserURL
+	res.Header().Set("content-type", "application/json")
 	name := req.Context().Value(middleware.ContextKey("Name")).(string)
 	if len(name) < 1 {
 		res.WriteHeader(http.StatusUnauthorized)
