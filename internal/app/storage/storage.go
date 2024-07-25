@@ -12,8 +12,8 @@ type Storage interface {
 	ListUserURLs(Name string) ([]UserURL, error)
 }
 type UserURL struct {
-	ShortURL    string
-	OriginalURL string
+	ShortURL    string `json:"short_url"`
+	OriginalURL string `json:"original_url"`
 }
 type URLRegistryM struct {
 	ID          string `json:"correlation_id"`
