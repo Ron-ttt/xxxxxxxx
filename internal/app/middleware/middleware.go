@@ -3,6 +3,7 @@ package middleware
 import (
 	"compress/gzip"
 	"context"
+	"encoding/hex"
 	"errors"
 	"io"
 	"net/http"
@@ -99,16 +100,21 @@ type ToHand struct {
 // TODO 4. no cry!!!
 // ! JUST CRYYYYYYYYY
 // *    5. create secret key
+const secretKey2 = "13d6b4dff8f84a10851021ec8608f814570d562c92fe6b5ec4c9f595bcb3234b"
+
 func AuthMiddleware(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var th ToHand
-		secretKey := []byte("mandarinmandarin")
-		length := 5
-		username := utils.RandString(length)
+		secretKey, err := hex.DecodeString(secretKey2)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
 		namecookie := "username"
 		value, err := cookies.ReadEncrypted(r, namecookie, secretKey)
 		if err != nil {
 			if errors.Is(err, http.ErrNoCookie) {
+				username := utils.RandString(5)
 				cookie := http.Cookie{
 					Name:     namecookie,
 					Value:    username,

@@ -152,8 +152,7 @@ func (hw handlerWrapper) IndexPageJ(res http.ResponseWriter, req *http.Request) 
 		}
 		return
 	}
-	res.Header().Set("content-type", "application/json")
-	res.WriteHeader(http.StatusCreated)
+
 	length := 6 // Укажите длину строки
 	randomString := utils.RandString(length)
 	rez.Result = hw.baseURL + randomString
@@ -164,6 +163,8 @@ func (hw handlerWrapper) IndexPageJ(res http.ResponseWriter, req *http.Request) 
 		return
 	}
 
+	res.Header().Set("content-type", "application/json")
+	res.WriteHeader(http.StatusCreated)
 	if err := json.NewEncoder(res).Encode(rez); err != nil {
 		http.Error(res, err.Error(), http.StatusInternalServerError)
 		return
