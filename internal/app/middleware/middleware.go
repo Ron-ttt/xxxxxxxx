@@ -88,6 +88,10 @@ func GzipMiddleware(h http.Handler) http.Handler {
 }
 
 type ContextKey string
+type ToHand struct {
+	Value  string
+	IsAuth bool
+}
 
 // *    1. generate random names for users
 // *    2. use read/writeEncrypted funcs
@@ -97,6 +101,7 @@ type ContextKey string
 // *    5. create secret key
 func AuthMiddleware(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var th ToHand
 		secretKey := []byte("mandarinmandarin")
 		length := 5
 		username := utils.RandString(length)
@@ -109,6 +114,8 @@ func AuthMiddleware(h http.Handler) http.Handler {
 					Value: username,
 				}
 				err1 := cookies.WriteEncrypted(w, cookie, secretKey)
+				th.IsAuth = false
+				th.Value = username
 				if err1 != nil {
 					http.Error(w, err1.Error(), http.StatusBadRequest)
 					return
@@ -117,9 +124,12 @@ func AuthMiddleware(h http.Handler) http.Handler {
 				http.Error(w, err.Error(), http.StatusBadRequest)
 				return
 			}
+		} else {
+			th.IsAuth = true
+			th.Value = value
 		}
 		var key ContextKey = "Name"
-		ctx := context.WithValue(r.Context(), key, value)
+		ctx := context.WithValue(r.Context(), key, th)
 		h.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

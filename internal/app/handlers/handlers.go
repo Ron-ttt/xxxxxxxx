@@ -71,8 +71,8 @@ func (hw handlerWrapper) IndexPage(res http.ResponseWriter, req *http.Request) {
 	length := 6 // Укажите длину строки
 	randomString := utils.RandString(length)
 	rez := hw.baseURL + randomString
-	name := req.Context().Value(middleware.ContextKey("Name")).(string)
-	err = hw.storageInterface.Add(randomString, string(originalURL), name)
+	name := req.Context().Value(middleware.ContextKey("Name")).(middleware.ToHand)
+	err = hw.storageInterface.Add(randomString, string(originalURL), name.Value)
 	if err != nil {
 		http.Error(res, "ошибка эдд", http.StatusBadRequest)
 		return
@@ -115,8 +115,8 @@ func (hw handlerWrapper) IndexPageM(res http.ResponseWriter, req *http.Request) 
 		rez = append(rez, storage.URLRegistryMRes{ID: v.ID, ShortURL: hw.baseURL + randomString})
 	}
 	rez = append(rez, rez2...)
-	name := req.Context().Value(middleware.ContextKey("Name")).(string)
-	err := hw.storageInterface.AddM(body2, listshort, name)
+	name := req.Context().Value(middleware.ContextKey("Name")).(middleware.ToHand)
+	err := hw.storageInterface.AddM(body2, listshort, name.Value)
 	if err != nil {
 		http.Error(res, err.Error(), http.StatusInternalServerError)
 		return
@@ -157,8 +157,8 @@ func (hw handlerWrapper) IndexPageJ(res http.ResponseWriter, req *http.Request) 
 	length := 6 // Укажите длину строки
 	randomString := utils.RandString(length)
 	rez.Result = hw.baseURL + randomString
-	name := req.Context().Value(middleware.ContextKey("Name")).(string)
-	hw.storageInterface.Add(randomString, string(longURL.URL), name)
+	name := req.Context().Value(middleware.ContextKey("Name")).(middleware.ToHand)
+	hw.storageInterface.Add(randomString, string(longURL.URL), name.Value)
 	if err := json.NewEncoder(res).Encode(rez); err != nil {
 		http.Error(res, err.Error(), http.StatusInternalServerError)
 		return
@@ -187,14 +187,15 @@ func (hw handlerWrapper) BD(res http.ResponseWriter, req *http.Request) {
 }
 
 func (hw handlerWrapper) ListUserURLs(res http.ResponseWriter, req *http.Request) {
+	var name middleware.ToHand
 	var body []storage.UserURL
 	res.Header().Set("content-type", "application/json")
-	name := req.Context().Value(middleware.ContextKey("Name")).(string)
-	if len(name) < 1 {
+	name = req.Context().Value(middleware.ContextKey("Name")).(middleware.ToHand)
+	if !name.IsAuth {
 		res.WriteHeader(http.StatusUnauthorized)
 		return
 	}
-	body, err := hw.storageInterface.ListUserURLs(name)
+	body, err := hw.storageInterface.ListUserURLs(name.Value)
 	if err != nil {
 		http.Error(res, "", http.StatusBadRequest)
 		return
@@ -207,5 +208,5 @@ func (hw handlerWrapper) ListUserURLs(res http.ResponseWriter, req *http.Request
 		http.Error(res, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	res.WriteHeader(http.StatusTemporaryRedirect)
+	res.WriteHeader(http.StatusOK)
 }
