@@ -158,7 +158,12 @@ func (hw handlerWrapper) IndexPageJ(res http.ResponseWriter, req *http.Request) 
 	randomString := utils.RandString(length)
 	rez.Result = hw.baseURL + randomString
 	name := req.Context().Value(middleware.ContextKey("Name")).(middleware.ToHand)
-	hw.storageInterface.Add(randomString, string(longURL.URL), name.Value)
+	err = hw.storageInterface.Add(randomString, string(longURL.URL), name.Value)
+	if err != nil {
+		http.Error(res, err.Error(), http.StatusBadRequest)
+		return
+	}
+
 	if err := json.NewEncoder(res).Encode(rez); err != nil {
 		http.Error(res, err.Error(), http.StatusInternalServerError)
 		return
@@ -189,7 +194,7 @@ func (hw handlerWrapper) BD(res http.ResponseWriter, req *http.Request) {
 func (hw handlerWrapper) ListUserURLs(res http.ResponseWriter, req *http.Request) {
 	var name middleware.ToHand
 	var body []storage.UserURL
-	res.Header().Set("content-type", "application/json")
+
 	name = req.Context().Value(middleware.ContextKey("Name")).(middleware.ToHand)
 	if !name.IsAuth {
 		res.WriteHeader(http.StatusUnauthorized)
@@ -204,9 +209,9 @@ func (hw handlerWrapper) ListUserURLs(res http.ResponseWriter, req *http.Request
 		res.WriteHeader(http.StatusNoContent)
 		return
 	}
+	res.Header().Set("content-type", "application/json")
 	if err := json.NewEncoder(res).Encode(body); err != nil {
 		http.Error(res, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	res.WriteHeader(http.StatusOK)
 }

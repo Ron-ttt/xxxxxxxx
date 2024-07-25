@@ -110,8 +110,11 @@ func AuthMiddleware(h http.Handler) http.Handler {
 		if err != nil {
 			if errors.Is(err, http.ErrNoCookie) {
 				cookie := http.Cookie{
-					Name:  namecookie,
-					Value: username,
+					Name:     namecookie,
+					Value:    username,
+					Path:     "/",
+					HttpOnly: true,
+					Secure:   false,
 				}
 				err1 := cookies.WriteEncrypted(w, cookie, secretKey)
 				th.IsAuth = false
