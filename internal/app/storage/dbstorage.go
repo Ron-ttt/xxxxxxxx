@@ -94,7 +94,10 @@ func (s *DBStorage) Find(oru string) (string, error) {
 
 func (s *DBStorage) ListUserURLs(name string) ([]UserURL, error) {
 	var rez []UserURL
-	rows, _ := s.conn.Query(context.Background(), "SELECT originalurl, shorturl FROM hui WHERE users= $1", name)
+	rows, err := s.conn.Query(context.Background(), "SELECT originalurl, shorturl FROM hui WHERE users=$1", name)
+	if err != nil {
+		return nil, err
+	}
 	for rows.Next() {
 		var rez1 UserURL
 		err := rows.Scan(&rez1.OriginalURL, &rez1.ShortURL)
