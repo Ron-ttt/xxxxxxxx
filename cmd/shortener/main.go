@@ -14,7 +14,7 @@ func main() {
 	r := mux.NewRouter()
 	r.Use(middleware.Logger1, middleware.GzipMiddleware, middleware.AuthMiddleware)
 	r.HandleFunc("/api/user/urls", hw.ListUserURLs).Methods(http.MethodGet)
-	r.HandleFunc("/api/user/urls", hw.DeleteUrl).Methods(http.MethodDelete)
+	r.HandleFunc("/api/user/urls", hw.DeleteURL).Methods(http.MethodDelete)
 	r.HandleFunc("/ping", hw.BD).Methods(http.MethodGet)
 	r.HandleFunc("/", hw.IndexPage).Methods(http.MethodPost)
 	r.HandleFunc("/{id}", hw.Redirect).Methods(http.MethodGet)
