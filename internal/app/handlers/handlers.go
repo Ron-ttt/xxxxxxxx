@@ -210,3 +210,25 @@ func (hw handlerWrapper) ListUserURLs(res http.ResponseWriter, req *http.Request
 	}
 	res.WriteHeader(http.StatusOK)
 }
+
+func (hw handlerWrapper) DeleteUrl(res http.ResponseWriter, req *http.Request) {
+	mas, err := io.ReadAll(req.Body)
+	if err != nil {
+		http.Error(res, "unable to read body", http.StatusBadRequest)
+		return
+	}
+	name := req.Context().Value(middleware.ContextKey("Name")).(middleware.ToHand)
+	err = hw.storageInterface.DeleteUrl(mas, name.Value)
+	if err != nil {
+		http.Error(res, "unable to DELETE", http.StatusBadRequest)
+		return
+	}
+	// for i := 0; i < len(mas); i++ {
+	// 	err = hw.storageInterface.DeleteUrl(string(mas[i]))
+	// 	if err != nil {
+	// 		http.Error(res, "unable to read body", http.StatusBadRequest)
+	// 		return
+	// 	}
+	// }
+	res.WriteHeader(http.StatusAccepted)
+}

@@ -33,3 +33,7 @@ func (s *MStorage) Find(oru string) (string, error) {
 func (s *MStorage) ListUserURLs(name string) ([]UserURL, error) {
 	return nil, nil
 }
+
+func (s *MStorage) DeleteUrl(mas []byte, user string) error {
+	return nil
+}

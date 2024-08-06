@@ -25,7 +25,7 @@ func NewDBStorage(dbname string) (Storage, error) {
 	}
 	//defer conn.Close(context.Background())
 
-	_, err1 := conn.Exec(context.Background(), "CREATE TABLE IF NOT EXISTS hui(id SERIAL PRIMARY KEY, users text, shorturl text, originalurl text UNIQUE)")
+	_, err1 := conn.Exec(context.Background(), "CREATE TABLE IF NOT EXISTS hui(id SERIAL PRIMARY KEY, users text, shorturl text, originalurl text UNIQUE, isDeleted bool default false)")
 
 	if err1 != nil {
 		fmt.Println(err1)
@@ -107,4 +107,25 @@ func (s *DBStorage) ListUserURLs(name string) ([]UserURL, error) {
 		rez = append(rez, rez1)
 	}
 	return rez, nil
+}
+
+func (s *DBStorage) DeleteUrl(mas []byte, user string) error {
+	for i := 0; i < len(mas); i++ {
+		go func() error {
+			row := s.conn.QueryRow(context.Background(), "SELECT users FROM hui WHERE shorturl=$1", string(mas[i]))
+			var name string
+			err := row.Scan(&name)
+			if err != nil {
+				return err
+			}
+			if name == user {
+				_, err1 := s.conn.Exec(context.Background(), "UPDATE hui SET isDeleted=TRUE WHERE shorturl=$1", string(mas[i]))
+				if err1 != nil {
+					return err1
+				}
+			}
+			return nil
+		}()
+	}
+	return nil
 }

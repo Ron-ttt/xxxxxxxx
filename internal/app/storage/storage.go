@@ -10,10 +10,11 @@ type Storage interface {
 	AddM(mas []URLRegistryM, short []string, name string) error
 	Find(oru string) (string, error)
 	ListUserURLs(Name string) ([]UserURL, error)
+	DeleteUrl([]byte, string) error
 }
 type UserURL struct {
-	ShortURL    string
-	OriginalURL string
+	ShortURL    string `json:"short_url"`
+	OriginalURL string `json:"original_url"`
 }
 type URLRegistryM struct {
 	ID          string `json:"correlation_id"`
@@ -79,4 +80,8 @@ func (s *MapStorage) ListUserURLs(name string) ([]UserURL, error) {
 		}
 	}
 	return rez, nil
+}
+
+func (s *MapStorage) DeleteUrl(mas []byte, user string) error {
+	return nil
 }
