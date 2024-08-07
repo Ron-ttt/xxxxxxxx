@@ -158,7 +158,11 @@ func (hw handlerWrapper) IndexPageJ(res http.ResponseWriter, req *http.Request) 
 	randomString := utils.RandString(length)
 	rez.Result = hw.baseURL + randomString
 	name := req.Context().Value(middleware.ContextKey("Name")).(middleware.ToHand)
-	hw.storageInterface.Add(randomString, string(longURL.URL), name.Value)
+	err = hw.storageInterface.Add(randomString, string(longURL.URL), name.Value)
+	if err != nil {
+		http.Error(res, "ошибка эдд", http.StatusBadRequest)
+		return
+	}
 	if err := json.NewEncoder(res).Encode(rez); err != nil {
 		http.Error(res, err.Error(), http.StatusInternalServerError)
 		return
@@ -231,12 +235,5 @@ func (hw handlerWrapper) DeleteURL(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, "unable to DELETE", http.StatusBadRequest)
 		return
 	}
-	// for i := 0; i < len(mas); i++ {
-	// 	err = hw.storageInterface.DeleteUrl(string(mas[i]))
-	// 	if err != nil {
-	// 		http.Error(res, "unable to read body", http.StatusBadRequest)
-	// 		return
-	// 	}
-	// }
 	res.WriteHeader(http.StatusAccepted)
 }

@@ -3,7 +3,6 @@ package storage
 import (
 	"context"
 	"fmt"
-	"log"
 
 	"github.com/jackc/pgx/v5"
 )
@@ -131,22 +130,4 @@ func (s *DBStorage) DeleteURL(mas []string, user string) error {
 	}
 	close(url)
 	return nil
-}
-
-func del(s *DBStorage, user string, url <-chan string) {
-	for u := range url {
-		row := s.conn.QueryRow(context.Background(), "SELECT users FROM hui WHERE shorturl=$1", u)
-		var name string
-		err := row.Scan(&name)
-		if err != nil {
-			log.Println(err)
-		}
-		if name == user {
-			_, err1 := s.conn.Exec(context.Background(), "UPDATE hui SET isDeleted=TRUE WHERE shorturl=$1", u)
-			if err1 != nil {
-				log.Println(err1)
-			}
-		}
-	}
-
 }
