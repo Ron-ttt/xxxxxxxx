@@ -3,6 +3,7 @@ package storage
 import (
 	"context"
 	"fmt"
+	"log"
 
 	"github.com/jackc/pgx/v5"
 )
@@ -121,22 +122,31 @@ func (s *DBStorage) ListUserURLs(name string) ([]UserURL, error) {
 }
 
 func (s *DBStorage) DeleteURL(mas []string, user string) error {
-	for i := 0; i < len(mas); i++ {
-		go func() error {
-			row := s.conn.QueryRow(context.Background(), "SELECT users FROM hui WHERE shorturl=$1", string(mas[i]))
-			var name string
-			err := row.Scan(&name)
-			if err != nil {
-				return err
-			}
-			if name == user {
-				_, err1 := s.conn.Exec(context.Background(), "UPDATE hui SET isDeleted=TRUE WHERE shorturl=$1", string(mas[i]))
-				if err1 != nil {
-					return err1
-				}
-			}
-			return nil
-		}()
+	url := make(chan string, 100)
+	for i := 0; i < 10; i++ {
+		go del(s, user, url)
 	}
+	for i := 0; i < len(mas); i++ {
+		url <- mas[i]
+	}
+	close(url)
 	return nil
+}
+
+func del(s *DBStorage, user string, url <-chan string) {
+	for u := range url {
+		row := s.conn.QueryRow(context.Background(), "SELECT users FROM hui WHERE shorturl=$1", u)
+		var name string
+		err := row.Scan(&name)
+		if err != nil {
+			log.Println(err)
+		}
+		if name == user {
+			_, err1 := s.conn.Exec(context.Background(), "UPDATE hui SET isDeleted=TRUE WHERE shorturl=$1", u)
+			if err1 != nil {
+				log.Println(err1)
+			}
+		}
+	}
+
 }
