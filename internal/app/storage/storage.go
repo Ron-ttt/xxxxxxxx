@@ -82,6 +82,6 @@ func (s *MapStorage) ListUserURLs(name string) ([]UserURL, error) {
 	return rez, nil
 }
 
-func (s *MapStorage) DeleteURL(mas []string, user string) error {
+func (s *MapStorage) DeleteURL(mas string, user string) error {
 	return nil
 }
