@@ -45,13 +45,23 @@ func (s *DBStorage) Add(key string, value string, name string) error {
 }
 
 func (s *DBStorage) Get(key string) (string, error) {
-	rows := s.conn.QueryRow(context.Background(), "SELECT originalurl FROM hui WHERE shorturl= $1", key)
-	var originalURL string
-	err := rows.Scan(&originalURL)
+	rows, err := s.conn.Query(context.Background(), "SELECT originalurl, isDeleted FROM hui WHERE shorturl= $1", key)
 	if err != nil {
 		return "", err
 	}
-	return originalURL, nil
+	var originalURL string
+	var del bool
+	for rows.Next() {
+		err := rows.Scan(&originalURL, &del)
+		if err != nil {
+			return "", err
+		}
+	}
+	if del == false {
+		return originalURL, nil
+	} else {
+		return "1", nil
+	}
 }
 
 func (s *DBStorage) Ping() error {

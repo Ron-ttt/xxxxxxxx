@@ -173,8 +173,11 @@ func (hw handlerWrapper) Redirect(res http.ResponseWriter, req *http.Request) { 
 		http.Error(res, "not found", http.StatusBadRequest)
 		return
 	}
-	res.Header().Set("Location", originalURL)
-	res.WriteHeader(http.StatusTemporaryRedirect)
+	if originalURL == "1" {
+		res.WriteHeader(http.StatusGone)
+	} else {
+		res.Header().Set("Location", originalURL)
+	}
 }
 
 func (hw handlerWrapper) BD(res http.ResponseWriter, req *http.Request) {
