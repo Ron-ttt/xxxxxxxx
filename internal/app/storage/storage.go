@@ -9,7 +9,7 @@ type Storage interface {
 	Ping() error
 	AddM(mas []URLRegistryM, short []string, name string) error
 	Find(oru string) (string, error)
-	ListUserURLs(Name string) ([]UserURL, error)
+	ListUserURLs(name string) ([]UserURL, error)
 	DeleteURL(string, string) error
 }
 type UserURL struct {
