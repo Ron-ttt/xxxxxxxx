@@ -208,6 +208,10 @@ func (hw handlerWrapper) ListUserURLs(res http.ResponseWriter, req *http.Request
 		res.WriteHeader(http.StatusNoContent)
 		return
 	}
+	for i := 0; i < len(body); i++ {
+		r := hw.baseURL + body[i].ShortURL
+		body[i].ShortURL = r
+	}
 	if err := json.NewEncoder(res).Encode(body); err != nil {
 		http.Error(res, err.Error(), http.StatusInternalServerError)
 		return
