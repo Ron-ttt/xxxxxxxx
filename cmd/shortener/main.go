@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"log"
 	"net/http"
 
@@ -10,14 +9,10 @@ import (
 	"github.com/gorilla/mux"
 )
 
-type userurl struct {
-	user string
-	url  string
-}
-
 func main() {
 
 	hw := handlers.Init()
+
 	r := mux.NewRouter()
 	r.Use(middleware.Logger1, middleware.GzipMiddleware, middleware.AuthMiddleware)
 	r.HandleFunc("/api/user/urls", hw.ListUserURLs).Methods(http.MethodGet)
@@ -28,30 +23,19 @@ func main() {
 	r.HandleFunc("/api/shorten", hw.IndexPageJ).Methods(http.MethodPost)
 	r.HandleFunc("/api/shorten/batch", hw.IndexPageM).Methods(http.MethodPost)
 
+	for i := 0; i < 10; i++ {
+		go func() {
+			for item := range hw.DeleteURLCh {
+				hw.DelJob(item)
+			}
+		}()
+	}
+
 	log.Println("server is running")
 	err := http.ListenAndServe(hw.Localhost, r)
 
 	if err != nil {
 		panic(err)
-	}
-
-	url := make(chan userurl, 100)
-	for i := 0; i < 10; i++ {
-		go del(hw, url)
-	}
-}
-func del(s handlers.handlerWrapper, url <-chan string) {
-	row := s.conn.QueryRow(context.Background(), "SELECT users FROM hui WHERE shorturl=$1", u)
-	var name string
-	err := row.Scan(&name)
-	if err != nil {
-		log.Println(err)
-	}
-	if name == user {
-		_, err1 := s.conn.Exec(context.Background(), "UPDATE hui SET isDeleted=TRUE WHERE shorturl=$1", u)
-		if err1 != nil {
-			log.Println(err1)
-		}
 	}
 
 }

@@ -23,31 +23,40 @@ type URLRegistryResult struct {
 
 // var localhost = "http://" + Localhost + "/"
 
+type userurl struct {
+	user string
+	url  string
+}
+
 func Init() handlerWrapper {
 	localhost, baseURL, storageType, dbAdress := config.Flags()
+	ch := make(chan userurl, 100)
+
 	if dbAdress != "" {
 		dBStorage, err := storage.NewDBStorage(dbAdress)
 		if err == nil {
-			return handlerWrapper{storageInterface: dBStorage, Localhost: localhost, baseURL: baseURL + "/"}
+			return handlerWrapper{storageInterface: dBStorage, Localhost: localhost, baseURL: baseURL + "/", DeleteURLCh: ch}
 		}
 	}
 	if storageType != "" {
 		fileStorage, err := storage.NewFileStorage(storageType)
 		if err == nil {
-			return handlerWrapper{storageInterface: fileStorage, Localhost: localhost, baseURL: baseURL + "/"}
+			return handlerWrapper{storageInterface: fileStorage, Localhost: localhost, baseURL: baseURL + "/", DeleteURLCh: ch}
 		}
 	}
-	return handlerWrapper{storageInterface: storage.NewMapStorage(), Localhost: localhost, baseURL: baseURL + "/"}
+	return handlerWrapper{storageInterface: storage.NewMapStorage(), Localhost: localhost, baseURL: baseURL + "/", DeleteURLCh: ch}
 }
 
 func MInit() handlerWrapper {
-	return handlerWrapper{storageInterface: storage.NewMockStorage(), Localhost: "localhost:8080", baseURL: "http://localhost:8080/"}
+	ch := make(chan userurl, 100)
+	return handlerWrapper{storageInterface: storage.NewMockStorage(), Localhost: "localhost:8080", baseURL: "http://localhost:8080/", DeleteURLCh: ch}
 }
 
 type handlerWrapper struct {
 	storageInterface storage.Storage
 	Localhost        string
 	baseURL          string
+	DeleteURLCh      chan userurl
 }
 
 func (hw handlerWrapper) IndexPage(res http.ResponseWriter, req *http.Request) { // post
@@ -230,10 +239,14 @@ func (hw handlerWrapper) DeleteURL(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 	name := req.Context().Value(middleware.ContextKey("Name")).(middleware.ToHand)
-	err := hw.storageInterface.DeleteURL(mas, name.Value)
-	if err != nil {
-		http.Error(res, "unable to DELETE", http.StatusBadRequest)
-		return
+
+	for i := range mas {
+		hw.DeleteURLCh <- userurl{user: name.Value, url: mas[i]}
 	}
+
 	res.WriteHeader(http.StatusAccepted)
+}
+
+func (hw handlerWrapper) DelJob(item userurl) {
+	hw.storageInterface.DeleteURL(item.user, item.url)
 }

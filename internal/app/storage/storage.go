@@ -10,7 +10,7 @@ type Storage interface {
 	AddM(mas []URLRegistryM, short []string, name string) error
 	Find(oru string) (string, error)
 	ListUserURLs(Name string) ([]UserURL, error)
-	DeleteURL([]string, string) error
+	DeleteURL(string, string) error
 }
 type UserURL struct {
 	ShortURL    string `json:"short_url"`
