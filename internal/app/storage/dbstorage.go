@@ -51,13 +51,14 @@ func (s *DBStorage) Get(key string) (string, error) {
 	}
 	var originalURL string
 	var del bool
+	defer rows.Close()
 	for rows.Next() {
 		err := rows.Scan(&originalURL, &del)
 		if err != nil {
 			return "", err
 		}
 	}
-	if del == false {
+	if !del {
 		return originalURL, nil
 	} else {
 		return "1", nil
@@ -119,7 +120,7 @@ func (s *DBStorage) ListUserURLs(name string) ([]UserURL, error) {
 	return rez, nil
 }
 
-func (s *DBStorage) DeleteURL(mas []byte, user string) error {
+func (s *DBStorage) DeleteURL(mas []string, user string) error {
 	for i := 0; i < len(mas); i++ {
 		go func() error {
 			row := s.conn.QueryRow(context.Background(), "SELECT users FROM hui WHERE shorturl=$1", string(mas[i]))
