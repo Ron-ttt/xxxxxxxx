@@ -34,6 +34,6 @@ func (s *MStorage) ListUserURLs(name string) ([]UserURL, error) {
 	return nil, nil
 }
 
-func (s *MStorage) DeleteURL(mas string, user string) error {
+func (s *MStorage) DeleteURL(user string, mas string) error {
 	return nil
 }
