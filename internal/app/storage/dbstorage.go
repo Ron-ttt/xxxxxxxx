@@ -4,13 +4,12 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type DBStorage struct {
-	conn *pgx.Conn
+	conn *pgxpool.Pool
 }
-
 type URL struct {
 	ShortURL    string
 	OriginalURL string
@@ -18,7 +17,7 @@ type URL struct {
 
 func NewDBStorage(dbname string) (Storage, error) {
 	fmt.Println("3")
-	conn, err := pgx.Connect(context.Background(), dbname)
+	conn, err := pgxpool.New(context.Background(), dbname)
 	if err != nil {
 		fmt.Println(err)
 		return nil, err
@@ -109,6 +108,7 @@ func (s *DBStorage) ListUserURLs(name string) ([]UserURL, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 	for rows.Next() {
 		var rez1 UserURL
 		err := rows.Scan(&rez1.OriginalURL, &rez1.ShortURL)

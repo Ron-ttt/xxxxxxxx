@@ -32,6 +32,7 @@ func Init() handlerWrapper {
 	localhost, baseURL, storageType, dbAdress := config.Flags()
 	ch := make(chan userurl, 100)
 
+	//dbAdress = "postgresql://localhost:5432/shvm"
 	if dbAdress != "" {
 		dBStorage, err := storage.NewDBStorage(dbAdress)
 		if err == nil {
