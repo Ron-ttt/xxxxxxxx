@@ -177,6 +177,7 @@ func (hw handlerWrapper) Redirect(res http.ResponseWriter, req *http.Request) { 
 		res.WriteHeader(http.StatusGone)
 	} else {
 		res.Header().Set("Location", originalURL)
+		res.WriteHeader(http.StatusTemporaryRedirect)
 	}
 }
 
