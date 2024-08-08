@@ -2,7 +2,6 @@ package storage
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -15,6 +14,8 @@ type URL struct {
 	ShortURL    string
 	OriginalURL string
 }
+
+var ErrDeleted = fmt.Errorf("url is deleted")
 
 func NewDBStorage(dbname string) (Storage, error) {
 	fmt.Println("3")
@@ -61,8 +62,8 @@ func (s *DBStorage) Get(key string) (string, error) {
 	if !del {
 		return originalURL, nil
 	} else {
-		errurldeleted := errors.New("1")
-		return "", errurldeleted
+
+		return "", ErrDeleted
 	}
 }
 

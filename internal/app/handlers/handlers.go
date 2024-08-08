@@ -185,11 +185,13 @@ func (hw handlerWrapper) Redirect(res http.ResponseWriter, req *http.Request) { 
 	params := mux.Vars(req)
 	id := params["id"]
 	originalURL, ok := hw.storageInterface.Get(id)
-	if errors.Is(ok, errors.New("1")) {
-		res.WriteHeader(http.StatusGone)
-		return
-	}
+
 	if ok != nil {
+		if errors.Is(ok, storage.ErrDeleted) {
+			res.WriteHeader(http.StatusGone)
+			return
+		}
+
 		http.Error(res, "not found", http.StatusBadRequest)
 		return
 	}
