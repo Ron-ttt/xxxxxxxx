@@ -122,8 +122,8 @@ func (s *DBStorage) ListUserURLs(name string) ([]UserURL, error) {
 	return rez, nil
 }
 
-func (s *DBStorage) DeleteURL(user string, mas string) error {
-	_, err1 := s.conn.Exec(context.Background(), "UPDATE urls SET isDeleted=TRUE WHERE shorturl=$1 and users=$2", mas, user)
+func (s *DBStorage) DeleteURL(user string, short string) error {
+	_, err1 := s.conn.Exec(context.Background(), "UPDATE urls SET isDeleted=TRUE WHERE shorturl=$1 AND users=$2", short, user)
 	if err1 != nil {
 		return err1
 	}

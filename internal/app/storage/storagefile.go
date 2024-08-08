@@ -82,6 +82,6 @@ func (s *FileStorage) Find(oru string) (string, error) {
 func (s *FileStorage) ListUserURLs(name string) ([]UserURL, error) {
 	return s.memoryStorage.ListUserURLs(name)
 }
-func (s *FileStorage) DeleteURL(user string, mas string) error {
+func (s *FileStorage) DeleteURL(user string, short string) error {
 	return nil
 }
