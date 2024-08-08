@@ -13,6 +13,7 @@ type FileStorage struct {
 
 type FileJSON struct {
 	UUID        int    `json:"uuid"`
+	Users       string `json:"user"`
 	ShortURL    string `json:"short_url"`
 	OriginalURL string `json:"original_url"`
 }
@@ -29,7 +30,7 @@ func NewFileStorage(filename string) (Storage, error) {
 	for decoder.More() {
 		var data FileJSON
 		decoder.Decode(&data)
-		memoryStorage.Add(data.ShortURL, data.OriginalURL)
+		memoryStorage.Add(data.ShortURL, data.OriginalURL, data.Users)
 	}
 
 	return &FileStorage{
@@ -38,9 +39,9 @@ func NewFileStorage(filename string) (Storage, error) {
 	}, nil
 }
 
-func (s *FileStorage) Add(key string, value string) error {
-	s.memoryStorage.Add(key, value)
-	data := FileJSON{UUID: 1, ShortURL: key, OriginalURL: value}
+func (s *FileStorage) Add(key string, value string, name string) error {
+	s.memoryStorage.Add(key, value, name)
+	data := FileJSON{UUID: 1, Users: name, ShortURL: key, OriginalURL: value}
 	jsonData, err := json.Marshal(data)
 	if err != nil {
 		return err
@@ -66,14 +67,21 @@ func (s *FileStorage) Ping() error {
 	return errors.New("тут нет бд")
 }
 
-func (s *FileStorage) AddM(mas []URLRegistryM, short []string) error {
+func (s *FileStorage) AddM(mas []URLRegistryM, short []string, name string) error {
 	l := len(mas)
 	for i := 0; i < l; i++ {
-		s.Add(mas[i].OriginalURL, short[i])
+		s.Add(mas[i].OriginalURL, short[i], name)
 	}
 	return nil
 }
 
 func (s *FileStorage) Find(oru string) (string, error) {
 	return "", errors.New("")
+}
+
+func (s *FileStorage) ListUserURLs(name string) ([]UserURL, error) {
+	return s.memoryStorage.ListUserURLs(name)
+}
+func (s *FileStorage) DeleteURL(user string, short string) error {
+	return nil
 }

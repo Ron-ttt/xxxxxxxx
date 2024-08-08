@@ -4,38 +4,40 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type DBStorage struct {
-	conn *pgx.Conn
+	conn *pgxpool.Pool
 }
-
 type URL struct {
 	ShortURL    string
 	OriginalURL string
 }
 
+var ErrDeleted = fmt.Errorf("url is deleted")
+
 func NewDBStorage(dbname string) (Storage, error) {
 	fmt.Println("3")
-	conn, err := pgx.Connect(context.Background(), dbname)
+	conn, err := pgxpool.New(context.Background(), dbname)
 	if err != nil {
 		fmt.Println(err)
 		return nil, err
 	}
 	//defer conn.Close(context.Background())
 
-	_, err1 := conn.Exec(context.Background(), "CREATE TABLE IF NOT EXISTS hui(id SERIAL PRIMARY KEY,shorturl text, originalurl text UNIQUE)")
-	fmt.Println("2")
+	_, err1 := conn.Exec(context.Background(), "CREATE TABLE IF NOT EXISTS links(id SERIAL PRIMARY KEY, users text, shorturl text, originalurl text UNIQUE, isDeleted bool default false)")
+
 	if err1 != nil {
 		fmt.Println(err1)
 		return nil, err1
 	}
+	fmt.Println("2")
 	return &DBStorage{conn}, nil
 }
 
-func (s *DBStorage) Add(key string, value string) error {
-	_, err := s.conn.Exec(context.Background(), "INSERT INTO hui (shorturl, originalurl) VALUES($1, $2)", key, value)
+func (s *DBStorage) Add(key string, value string, name string) error {
+	_, err := s.conn.Exec(context.Background(), "INSERT INTO links (shorturl, originalurl, users) VALUES($1, $2, $3)", key, value, name)
 	if err != nil {
 		fmt.Println(err)
 		return err
@@ -44,13 +46,25 @@ func (s *DBStorage) Add(key string, value string) error {
 }
 
 func (s *DBStorage) Get(key string) (string, error) {
-	rows := s.conn.QueryRow(context.Background(), "SELECT originalurl FROM hui WHERE shorturl= $1", key)
-	var originalURL string
-	err := rows.Scan(&originalURL)
+	rows, err := s.conn.Query(context.Background(), "SELECT originalurl, isDeleted FROM links WHERE shorturl= $1", key)
 	if err != nil {
 		return "", err
 	}
-	return originalURL, nil
+	var originalURL string
+	var del bool
+	defer rows.Close()
+	for rows.Next() {
+		err := rows.Scan(&originalURL, &del)
+		if err != nil {
+			return "", err
+		}
+	}
+	if !del {
+		return originalURL, nil
+	} else {
+
+		return "", ErrDeleted
+	}
 }
 
 func (s *DBStorage) Ping() error {
@@ -61,14 +75,14 @@ func (s *DBStorage) Ping() error {
 	return nil
 }
 
-func (s *DBStorage) AddM(m []URLRegistryM, short []string) error {
+func (s *DBStorage) AddM(m []URLRegistryM, short []string, name string) error {
 	tx, err := s.conn.Begin(context.Background())
 	if err != nil {
 		return err
 	}
 	l := len(m)
 	for i := 0; i < l; i++ {
-		_, err := tx.Exec(context.Background(), "INSERT INTO hui (shorturl, originalurl)"+" VALUES($1,$2)", short[i], m[i].OriginalURL)
+		_, err := tx.Exec(context.Background(), "INSERT INTO links (shorturl, originalurl, users)"+" VALUES($1,$2,$3)", short[i], m[i].OriginalURL, name)
 		if err != nil {
 			// если ошибка, то откатываем изменения
 			tx.Rollback(context.Background())
@@ -82,11 +96,37 @@ func (s *DBStorage) AddM(m []URLRegistryM, short []string) error {
 	return nil
 }
 func (s *DBStorage) Find(oru string) (string, error) {
-	rows := s.conn.QueryRow(context.Background(), "SELECT shorturl FROM hui WHERE originalurl= $1", oru)
+	rows := s.conn.QueryRow(context.Background(), "SELECT shorturl FROM links WHERE originalurl= $1", oru)
 	var short string
 	err := rows.Scan(&short)
 	if err != nil {
 		return "", err
 	}
 	return short, nil
+}
+
+func (s *DBStorage) ListUserURLs(name string) ([]UserURL, error) {
+	var rez []UserURL
+	rows, err := s.conn.Query(context.Background(), "SELECT originalurl, shorturl FROM links WHERE users=$1", name)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var rez1 UserURL
+		err := rows.Scan(&rez1.OriginalURL, &rez1.ShortURL)
+		if err != nil {
+			return nil, err
+		}
+		rez = append(rez, rez1)
+	}
+	return rez, nil
+}
+
+func (s *DBStorage) DeleteURL(user string, short string) error {
+	_, err1 := s.conn.Exec(context.Background(), "UPDATE links SET isDeleted=TRUE WHERE shorturl=$1 AND users=$2", short, user)
+	if err1 != nil {
+		return err1
+	}
+	return nil
 }
