@@ -184,16 +184,16 @@ func (hw handlerWrapper) Redirect(res http.ResponseWriter, req *http.Request) { 
 	params := mux.Vars(req)
 	id := params["id"]
 	originalURL, ok := hw.storageInterface.Get(id)
+	if errors.Is(ok, errors.New("1")) {
+		res.WriteHeader(http.StatusGone)
+		return
+	}
 	if ok != nil {
 		http.Error(res, "not found", http.StatusBadRequest)
 		return
 	}
-	if errors.Is(ok, errors.New("1")) {
-		res.WriteHeader(http.StatusGone)
-	} else {
-		res.Header().Set("Location", originalURL)
-		res.WriteHeader(http.StatusTemporaryRedirect)
-	}
+	res.Header().Set("Location", originalURL)
+	res.WriteHeader(http.StatusTemporaryRedirect)
 }
 
 func (hw handlerWrapper) BD(res http.ResponseWriter, req *http.Request) {
