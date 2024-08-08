@@ -11,6 +11,7 @@ import (
 	"github.com/Ron-ttt/xxxxxxxx/internal/app/middleware"
 	"github.com/Ron-ttt/xxxxxxxx/internal/app/storage"
 	"github.com/Ron-ttt/xxxxxxxx/internal/app/utils"
+	"github.com/labstack/gommon/log"
 
 	"github.com/gorilla/mux"
 )
@@ -250,5 +251,5 @@ func (hw handlerWrapper) DeleteURL(res http.ResponseWriter, req *http.Request) {
 }
 
 func (hw handlerWrapper) DelJob(item deleteUserURL) {
-	hw.storageInterface.DeleteURL(item.user, item.url)
+	log.Warn(hw.storageInterface.DeleteURL(item.user, item.url))
 }
