@@ -25,7 +25,7 @@ func NewDBStorage(dbname string) (Storage, error) {
 	}
 	//defer conn.Close(context.Background())
 
-	_, err1 := conn.Exec(context.Background(), "CREATE TABLE IF NOT EXISTS urls(id SERIAL PRIMARY KEY, users text, shorturl text, originalurl text UNIQUE, isDeleted bool default false)")
+	_, err1 := conn.Exec(context.Background(), "CREATE TABLE IF NOT EXISTS links(id SERIAL PRIMARY KEY, users text, shorturl text, originalurl text UNIQUE, isDeleted bool default false)")
 
 	if err1 != nil {
 		fmt.Println(err1)
@@ -36,7 +36,7 @@ func NewDBStorage(dbname string) (Storage, error) {
 }
 
 func (s *DBStorage) Add(key string, value string, name string) error {
-	_, err := s.conn.Exec(context.Background(), "INSERT INTO urls (shorturl, originalurl, users) VALUES($1, $2, $3)", key, value, name)
+	_, err := s.conn.Exec(context.Background(), "INSERT INTO links (shorturl, originalurl, users) VALUES($1, $2, $3)", key, value, name)
 	if err != nil {
 		fmt.Println(err)
 		return err
@@ -45,7 +45,7 @@ func (s *DBStorage) Add(key string, value string, name string) error {
 }
 
 func (s *DBStorage) Get(key string) (string, error) {
-	rows, err := s.conn.Query(context.Background(), "SELECT originalurl, isDeleted FROM urls WHERE shorturl= $1", key)
+	rows, err := s.conn.Query(context.Background(), "SELECT originalurl, isDeleted FROM links WHERE shorturl= $1", key)
 	if err != nil {
 		return "", err
 	}
@@ -81,7 +81,7 @@ func (s *DBStorage) AddM(m []URLRegistryM, short []string, name string) error {
 	}
 	l := len(m)
 	for i := 0; i < l; i++ {
-		_, err := tx.Exec(context.Background(), "INSERT INTO urls (shorturl, originalurl, users)"+" VALUES($1,$2,$3)", short[i], m[i].OriginalURL, name)
+		_, err := tx.Exec(context.Background(), "INSERT INTO links (shorturl, originalurl, users)"+" VALUES($1,$2,$3)", short[i], m[i].OriginalURL, name)
 		if err != nil {
 			// если ошибка, то откатываем изменения
 			tx.Rollback(context.Background())
@@ -95,7 +95,7 @@ func (s *DBStorage) AddM(m []URLRegistryM, short []string, name string) error {
 	return nil
 }
 func (s *DBStorage) Find(oru string) (string, error) {
-	rows := s.conn.QueryRow(context.Background(), "SELECT shorturl FROM urls WHERE originalurl= $1", oru)
+	rows := s.conn.QueryRow(context.Background(), "SELECT shorturl FROM links WHERE originalurl= $1", oru)
 	var short string
 	err := rows.Scan(&short)
 	if err != nil {
@@ -106,7 +106,7 @@ func (s *DBStorage) Find(oru string) (string, error) {
 
 func (s *DBStorage) ListUserURLs(name string) ([]UserURL, error) {
 	var rez []UserURL
-	rows, err := s.conn.Query(context.Background(), "SELECT originalurl, shorturl FROM urls WHERE users=$1", name)
+	rows, err := s.conn.Query(context.Background(), "SELECT originalurl, shorturl FROM links WHERE users=$1", name)
 	if err != nil {
 		return nil, err
 	}
@@ -123,7 +123,7 @@ func (s *DBStorage) ListUserURLs(name string) ([]UserURL, error) {
 }
 
 func (s *DBStorage) DeleteURL(user string, short string) error {
-	_, err1 := s.conn.Exec(context.Background(), "UPDATE urls SET isDeleted=TRUE WHERE shorturl=$1 AND users=$2", short, user)
+	_, err1 := s.conn.Exec(context.Background(), "UPDATE links SET isDeleted=TRUE WHERE shorturl=$1 AND users=$2", short, user)
 	if err1 != nil {
 		return err1
 	}

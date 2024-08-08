@@ -9,6 +9,8 @@ import (
 	"github.com/gorilla/mux"
 )
 
+const jobNum = 10
+
 func main() {
 
 	hw := handlers.Init()
@@ -22,8 +24,8 @@ func main() {
 	r.HandleFunc("/{id}", hw.Redirect).Methods(http.MethodGet)
 	r.HandleFunc("/api/shorten", hw.IndexPageJ).Methods(http.MethodPost)
 	r.HandleFunc("/api/shorten/batch", hw.IndexPageM).Methods(http.MethodPost)
-	maxjob := 10
-	for i := 0; i < maxjob; i++ {
+
+	for i := 0; i < jobNum; i++ {
 		go func() {
 			for item := range hw.DeleteURLCh {
 				hw.DelJob(item)
