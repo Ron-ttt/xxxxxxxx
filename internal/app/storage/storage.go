@@ -10,7 +10,7 @@ type Storage interface {
 	AddM(mas []URLRegistryM, short []string, name string) error
 	Find(oru string) (string, error)
 	ListUserURLs(name string) ([]UserURL, error)
-	DeleteURL(string, string) error
+	DeleteURL(user string, mas string) error
 }
 type UserURL struct {
 	ShortURL    string `json:"short_url"`
@@ -26,21 +26,21 @@ type URLRegistryMRes struct {
 }
 
 type MapStorage struct {
-	m map[string]UsersOriginal
+	m map[string]usersOriginal
 }
-type UsersOriginal struct {
-	User     string
-	Original string
+type usersOriginal struct {
+	user     string
+	original string
 }
 
 func NewMapStorage() Storage {
 	return &MapStorage{
-		m: make(map[string]UsersOriginal),
+		m: make(map[string]usersOriginal),
 	}
 }
 
 func (s *MapStorage) Add(key string, value string, name string) error { // я хуй знает как сюда ошибку запихнуть
-	rez := UsersOriginal{User: name, Original: value}
+	rez := usersOriginal{user: name, original: value}
 	s.m[key] = rez
 	return nil
 }
@@ -54,7 +54,7 @@ func (s *MapStorage) Get(key string) (string, error) {
 	if !found {
 		return "", errors.New("key not found")
 	}
-	return value.Original, nil
+	return value.original, nil
 }
 func (s *MapStorage) Ping() error {
 	return errors.New("тут нет бд")
@@ -74,9 +74,9 @@ func (s *MapStorage) Find(oru string) (string, error) {
 
 func (s *MapStorage) ListUserURLs(name string) ([]UserURL, error) {
 	var rez []UserURL
-	for k, z := range s.m {
-		if z.User == name {
-			rez = append(rez, UserURL{OriginalURL: z.Original, ShortURL: k})
+	for shorturl, z := range s.m {
+		if z.user == name {
+			rez = append(rez, UserURL{OriginalURL: z.original, ShortURL: shorturl})
 		}
 	}
 	return rez, nil

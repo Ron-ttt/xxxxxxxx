@@ -22,8 +22,8 @@ func main() {
 	r.HandleFunc("/{id}", hw.Redirect).Methods(http.MethodGet)
 	r.HandleFunc("/api/shorten", hw.IndexPageJ).Methods(http.MethodPost)
 	r.HandleFunc("/api/shorten/batch", hw.IndexPageM).Methods(http.MethodPost)
-
-	for i := 0; i < 10; i++ {
+	maxjob := 10
+	for i := 0; i < maxjob; i++ {
 		go func() {
 			for item := range hw.DeleteURLCh {
 				hw.DelJob(item)

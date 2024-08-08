@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"errors"
 	"io"
 	"net/http"
 	"net/url"
@@ -23,14 +24,14 @@ type URLRegistryResult struct {
 
 // var localhost = "http://" + Localhost + "/"
 
-type userurl struct {
+type deleteUserURL struct {
 	user string
 	url  string
 }
 
 func Init() handlerWrapper {
 	localhost, baseURL, storageType, dbAdress := config.Flags()
-	ch := make(chan userurl, 100)
+	ch := make(chan deleteUserURL, 100)
 
 	//dbAdress = "postgresql://localhost:5432/shvm"
 	if dbAdress != "" {
@@ -49,7 +50,7 @@ func Init() handlerWrapper {
 }
 
 func MInit() handlerWrapper {
-	ch := make(chan userurl, 100)
+	ch := make(chan deleteUserURL, 100)
 	return handlerWrapper{storageInterface: storage.NewMockStorage(), Localhost: "localhost:8080", baseURL: "http://localhost:8080/", DeleteURLCh: ch}
 }
 
@@ -57,7 +58,7 @@ type handlerWrapper struct {
 	storageInterface storage.Storage
 	Localhost        string
 	baseURL          string
-	DeleteURLCh      chan userurl
+	DeleteURLCh      chan deleteUserURL
 }
 
 func (hw handlerWrapper) IndexPage(res http.ResponseWriter, req *http.Request) { // post
@@ -187,7 +188,7 @@ func (hw handlerWrapper) Redirect(res http.ResponseWriter, req *http.Request) { 
 		http.Error(res, "not found", http.StatusBadRequest)
 		return
 	}
-	if originalURL == "1" {
+	if ok == errors.New("1") {
 		res.WriteHeader(http.StatusGone)
 	} else {
 		res.Header().Set("Location", originalURL)
@@ -206,27 +207,27 @@ func (hw handlerWrapper) BD(res http.ResponseWriter, req *http.Request) {
 
 func (hw handlerWrapper) ListUserURLs(res http.ResponseWriter, req *http.Request) {
 	var name middleware.ToHand
-	var body []storage.UserURL
+	var rez []storage.UserURL
 	res.Header().Set("content-type", "application/json")
 	name = req.Context().Value(middleware.ContextKey("Name")).(middleware.ToHand)
 	if !name.IsAuth {
 		res.WriteHeader(http.StatusUnauthorized)
 		return
 	}
-	body, err := hw.storageInterface.ListUserURLs(name.Value)
+	rez, err := hw.storageInterface.ListUserURLs(name.Value)
 	if err != nil {
 		http.Error(res, "", http.StatusBadRequest)
 		return
 	}
-	if len(body) < 1 {
+	if len(rez) != 0 {
 		res.WriteHeader(http.StatusNoContent)
 		return
 	}
-	for i := 0; i < len(body); i++ {
-		r := hw.baseURL + body[i].ShortURL
-		body[i].ShortURL = r
+	for i := 0; i < len(rez); i++ {
+		r := hw.baseURL + rez[i].ShortURL
+		rez[i].ShortURL = r
 	}
-	if err := json.NewEncoder(res).Encode(body); err != nil {
+	if err := json.NewEncoder(res).Encode(rez); err != nil {
 		http.Error(res, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -234,20 +235,20 @@ func (hw handlerWrapper) ListUserURLs(res http.ResponseWriter, req *http.Request
 }
 
 func (hw handlerWrapper) DeleteURL(res http.ResponseWriter, req *http.Request) {
-	var mas []string
-	if err := json.NewDecoder(req.Body).Decode(&mas); err != nil {
+	var arr []string
+	if err := json.NewDecoder(req.Body).Decode(&arr); err != nil {
 		http.Error(res, err.Error(), http.StatusBadRequest)
 		return
 	}
 	name := req.Context().Value(middleware.ContextKey("Name")).(middleware.ToHand)
 
-	for i := range mas {
-		hw.DeleteURLCh <- userurl{user: name.Value, url: mas[i]}
+	for i := range arr {
+		hw.DeleteURLCh <- deleteUserURL{user: name.Value, url: arr[i]}
 	}
 
 	res.WriteHeader(http.StatusAccepted)
 }
 
-func (hw handlerWrapper) DelJob(item userurl) {
+func (hw handlerWrapper) DelJob(item deleteUserURL) {
 	hw.storageInterface.DeleteURL(item.user, item.url)
 }
