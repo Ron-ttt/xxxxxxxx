@@ -188,7 +188,7 @@ func (hw handlerWrapper) Redirect(res http.ResponseWriter, req *http.Request) { 
 		http.Error(res, "not found", http.StatusBadRequest)
 		return
 	}
-	if ok == errors.New("1") {
+	if errors.Is(ok, errors.New("1")) {
 		res.WriteHeader(http.StatusGone)
 	} else {
 		res.Header().Set("Location", originalURL)
@@ -219,7 +219,7 @@ func (hw handlerWrapper) ListUserURLs(res http.ResponseWriter, req *http.Request
 		http.Error(res, "", http.StatusBadRequest)
 		return
 	}
-	if len(rez) != 0 {
+	if len(rez) == 0 {
 		res.WriteHeader(http.StatusNoContent)
 		return
 	}

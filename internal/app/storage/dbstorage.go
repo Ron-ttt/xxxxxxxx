@@ -61,7 +61,8 @@ func (s *DBStorage) Get(key string) (string, error) {
 	if !del {
 		return originalURL, nil
 	} else {
-		return "", errors.New("1")
+		errurldeleted := errors.New("1")
+		return "", errurldeleted
 	}
 }
 
