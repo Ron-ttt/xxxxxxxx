@@ -11,7 +11,6 @@ import (
 	"github.com/Ron-ttt/xxxxxxxx/internal/app/middleware"
 	"github.com/Ron-ttt/xxxxxxxx/internal/app/storage"
 	"github.com/Ron-ttt/xxxxxxxx/internal/app/utils"
-	"github.com/labstack/gommon/log"
 
 	"github.com/gorilla/mux"
 )
@@ -31,10 +30,10 @@ type deleteUserURL struct {
 }
 
 func Init() handlerWrapper {
-	localhost, baseURL, storageType, _ := config.Flags()
+	localhost, baseURL, storageType, dbAdress := config.Flags()
 	ch := make(chan deleteUserURL, 100)
 
-	dbAdress := "postgresql://postgres:190603@localhost:5432/postgres"
+	//dbAdress := "postgresql://postgres:190603@localhost:5432/postgres"
 	if dbAdress != "" {
 		dBStorage, err := storage.NewDBStorage(dbAdress)
 		if err == nil {
@@ -251,5 +250,5 @@ func (hw handlerWrapper) DeleteURL(res http.ResponseWriter, req *http.Request) {
 }
 
 func (hw handlerWrapper) DelJob(item deleteUserURL) {
-	log.Warn(hw.storageInterface.DeleteURL(item.user, item.url))
+	hw.storageInterface.DeleteURL(item.user, item.url)
 }
